@@ -609,17 +609,36 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          hits: number
+          key: string
+          window_start: string
+        }
+        Insert: {
+          hits?: number
+          key: string
+          window_start: string
+        }
+        Update: {
+          hits?: number
+          key?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       refunds: {
         Row: {
           amount: number
           created_at: string
-          created_by: string
+          created_by: string | null
           id: string
-          order_id: string
+          order_id: string | null
           payment_id: string
           paystack_refund_id: string | null
           processed_at: string | null
           provider_status: string | null
+          reason: string
           requested_at: string | null
           status: Database["public"]["Enums"]["refund_status"]
           updated_at: string
@@ -627,13 +646,14 @@ export type Database = {
         Insert: {
           amount: number
           created_at?: string
-          created_by: string
+          created_by?: string | null
           id?: string
-          order_id: string
+          order_id?: string | null
           payment_id: string
           paystack_refund_id?: string | null
           processed_at?: string | null
           provider_status?: string | null
+          reason?: string
           requested_at?: string | null
           status?: Database["public"]["Enums"]["refund_status"]
           updated_at?: string
@@ -641,13 +661,14 @@ export type Database = {
         Update: {
           amount?: number
           created_at?: string
-          created_by?: string
+          created_by?: string | null
           id?: string
-          order_id?: string
+          order_id?: string | null
           payment_id?: string
           paystack_refund_id?: string | null
           processed_at?: string | null
           provider_status?: string | null
+          reason?: string
           requested_at?: string | null
           status?: Database["public"]["Enums"]["refund_status"]
           updated_at?: string
@@ -820,6 +841,20 @@ export type Database = {
         Args: { target_weekly_menu_product_id: string }
         Returns: number
       }
+      confirm_payment_order: {
+        Args: {
+          payment_reference: string
+          provider_transaction_id: string
+          verified_amount_kobo: number
+          verified_currency: string
+          verified_paid_at: string
+        }
+        Returns: Json
+      }
+      consume_rate_limit: {
+        Args: { bucket: string; max_hits: number; window_seconds: number }
+        Returns: boolean
+      }
       create_weekly_menu: { Args: never; Returns: string }
       delete_address: {
         Args: { target_address_id: string }
@@ -829,6 +864,10 @@ export type Database = {
       eligible_delivery_dates: { Args: never; Returns: string[] }
       expire_ended_menus: { Args: never; Returns: number }
       expire_temporary_reservations: { Args: never; Returns: number }
+      fail_payment: {
+        Args: { payment_reference: string; provider_status: string }
+        Returns: undefined
+      }
       generate_order_number: { Args: never; Returns: string }
       get_published_menu_availability: {
         Args: never
@@ -851,6 +890,14 @@ export type Database = {
       owns_order: { Args: { target_order_id: string }; Returns: boolean }
       publish_weekly_menu: {
         Args: { target_menu_id: string }
+        Returns: undefined
+      }
+      record_refund_request: {
+        Args: {
+          provider_refund_id: string
+          provider_status: string
+          target_refund_id: string
+        }
         Returns: undefined
       }
       release_inventory_reservation: {

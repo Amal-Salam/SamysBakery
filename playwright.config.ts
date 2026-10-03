@@ -3,13 +3,19 @@ import { defineConfig, devices } from "@playwright/test";
 import { getLocalSupabaseEnv } from "./scripts/local-supabase-env.mjs";
 
 const PORT = 3100;
-const MENU_SLOT_TESTS = [/admin-weekly-menu\.spec\.ts/, /storefront\.(setup|teardown|spec)\.ts/, /cart\.spec\.ts/, /checkout\.spec\.ts/];
+const MENU_SLOT_TESTS = [/admin-weekly-menu\.spec\.ts/, /storefront\.(setup|teardown|spec)\.ts/, /cart\.spec\.ts/, /checkout\.spec\.ts/, /payment\.spec\.ts/];
 const baseURL = `http://localhost:${PORT}`;
 
 // E2E runs against the local Supabase stack so test data never reaches the
 // hosted project. The app is built into a separate directory with these values.
 const localSupabase = getLocalSupabaseEnv();
-Object.assign(process.env, localSupabase);
+// Automated tests use a local mock of the Paystack API (never the real one).
+const MOCK_PAYSTACK_PORT = 3999;
+const mockPaystack = {
+  PAYSTACK_SECRET_KEY: "sk_test_mock_e2e",
+  PAYSTACK_API_BASE: `http://127.0.0.1:${MOCK_PAYSTACK_PORT}`,
+};
+Object.assign(process.env, localSupabase, mockPaystack);
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -43,27 +49,40 @@ export default defineConfig({
     { name: "storefront-teardown", testMatch: /storefront\.teardown\.ts/ },
     {
       name: "storefront-desktop",
-      testMatch: /(storefront|cart|checkout)\.spec\.ts/,
+      testMatch: /(storefront|cart|checkout|payment)\.spec\.ts/,
       dependencies: ["storefront-setup"],
       use: { ...devices["Desktop Chrome"] },
     },
     {
       name: "storefront-mobile",
-      testMatch: /(storefront|cart|checkout)\.spec\.ts/,
+      testMatch: /(storefront|cart|checkout|payment)\.spec\.ts/,
       dependencies: ["storefront-setup"],
       use: { ...devices["Pixel 7"] },
     },
   ],
   // Runs against a production build so E2E reflects deployed behaviour.
-  webServer: {
-    command: `npm run build && npm run start -- --port ${PORT}`,
-    url: baseURL,
-    reuseExistingServer: false,
-    timeout: 240_000,
-    env: {
-      ...localSupabase,
-      NEXT_PUBLIC_APP_URL: baseURL,
-      NEXT_DIST_DIR: ".next-e2e",
+  webServer: [
+    {
+      command: "node tests/e2e/mock-paystack.mjs",
+      url: `http://127.0.0.1:${MOCK_PAYSTACK_PORT}/health`,
+      reuseExistingServer: false,
+      env: {
+        MOCK_PAYSTACK_PORT: String(MOCK_PAYSTACK_PORT),
+        PAYSTACK_SECRET_KEY: mockPaystack.PAYSTACK_SECRET_KEY,
+        MOCK_PAYSTACK_WEBHOOK_URL: `${baseURL}/api/paystack/webhook`,
+      },
     },
-  },
+    {
+      command: `npm run build && npm run start -- --port ${PORT}`,
+      url: baseURL,
+      reuseExistingServer: false,
+      timeout: 240_000,
+      env: {
+        ...localSupabase,
+        ...mockPaystack,
+        NEXT_PUBLIC_APP_URL: baseURL,
+        NEXT_DIST_DIR: ".next-e2e",
+      },
+    },
+  ],
 });

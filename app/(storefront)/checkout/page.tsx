@@ -11,14 +11,19 @@ import { formatClockTime } from "@/lib/utils/dates";
 
 export const metadata: Metadata = { title: "Checkout" };
 
-export default async function CheckoutPage() {
+export default async function CheckoutPage({ searchParams }: PageProps<"/checkout">) {
   // Authentication is required before checkout (proxy redirects first; this is the authoritative check).
   const user = await requireUser("/checkout");
-  const [cart, context] = await Promise.all([getCart(), getCheckoutContext(user)]);
+  const [cart, context, { payment }] = await Promise.all([getCart(), getCheckoutContext(user), searchParams]);
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-10 sm:px-6 md:py-14">
       <h1 className="text-display-l text-primary">Checkout</h1>
+      {payment === "failed" ? (
+        <p role="alert" className="rounded-md bg-destructive/10 px-4 py-3 text-body-sm text-destructive">
+          Payment was not completed. You can try again.
+        </p>
+      ) : null}
 
       {cart.items.length === 0 ? (
         <EmptyState

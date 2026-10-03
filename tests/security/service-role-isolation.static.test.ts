@@ -66,6 +66,19 @@ describe("service-role isolation", () => {
     expect(referencers).toEqual(["lib/env.server.ts", "lib/supabase/admin.ts"]);
   });
 
+  it("the Paystack secret key is read only in lib/env.server.ts", () => {
+    const readers = files
+      .filter((file) => file.text.includes("process.env.PAYSTACK_SECRET_KEY"))
+      .map((file) => file.rel);
+    expect(readers).toEqual(["lib/env.server.ts"]);
+  });
+
+  it("Paystack API calls only happen in the server-only integration module", () => {
+    const callers = files.filter((file) => file.text.includes("api.paystack.co")).map((file) => file.rel);
+    expect(callers).toEqual(["lib/env.server.ts"]);
+    expect(readFileSync(path.join(ROOT, "lib/paystack/client.ts"), "utf8")).toMatch(/^import "server-only";/m);
+  });
+
   it("the service-role client is used only from server-side modules", () => {
     const importers = files.filter((file) => file.text.includes("@/lib/supabase/admin"));
     for (const file of importers) {

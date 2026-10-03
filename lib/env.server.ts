@@ -20,3 +20,29 @@ export function getServerEnv() {
   }
   return parsed.data;
 }
+
+const PAYSTACK_DEFAULT_BASE = "https://api.paystack.co";
+
+const paystackEnvSchema = z.object({
+  PAYSTACK_SECRET_KEY: z.string().regex(/^sk_(test|live)_[A-Za-z0-9_]+$/, "must be a Paystack secret key"),
+  // Only the real Paystack API, or a local mock for automated tests.
+  PAYSTACK_API_BASE: z
+    .string()
+    .default(PAYSTACK_DEFAULT_BASE)
+    .refine(
+      (value) => value === PAYSTACK_DEFAULT_BASE || /^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(value),
+      "must be https://api.paystack.co (or a localhost mock in tests)"
+    ),
+});
+
+export function getPaystackEnv() {
+  const parsed = paystackEnvSchema.safeParse({
+    PAYSTACK_SECRET_KEY: process.env.PAYSTACK_SECRET_KEY,
+    PAYSTACK_API_BASE: process.env.PAYSTACK_API_BASE || undefined,
+  });
+  if (!parsed.success) {
+    const fields = parsed.error.issues.map((issue) => issue.path.join("."));
+    throw new Error(`Invalid or missing Paystack configuration: ${fields.join(", ")}`);
+  }
+  return parsed.data;
+}

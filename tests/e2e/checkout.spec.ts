@@ -80,7 +80,7 @@ test("guest is sent to login and returned to checkout; full checkout preparation
   await expect(review.getByText("12 Aminu Kano Crescent, Wuse 2, Abuja, FCT")).toBeVisible();
   await expect(review.getByText("Please call on arrival.")).toBeVisible();
   await expect(review.getByText(/Delivery fee is handled separately/)).toBeVisible();
-  await expect(review.getByRole("button", { name: "Pay with Paystack" })).toBeDisabled();
+  await expect(review.getByRole("button", { name: "Pay with Paystack" })).toBeEnabled(); // Milestone 10
 
   // The new address was saved to the account (owner decision) as the default.
   const { data: saved } = await service.from("addresses").select("id, is_default, label").eq("user_id", customer.id);

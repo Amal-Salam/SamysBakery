@@ -50,7 +50,7 @@ export function SiteFooter() {
           <h2 id="footer-connect-heading" className="font-sans text-body-sm font-semibold">
             Connect
           </h2>
-          <ul className="flex flex-wrap gap-x-4">
+          <ul className="flex flex-col gap-y-1.5 ">
             {SITE.social.map((link) => (
               <li key={link.label}>
                 <a href={link.href} className={linkClass} target="_blank" rel="noopener noreferrer">

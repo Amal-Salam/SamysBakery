@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useActionState, useId, useState } from "react";
 
 import { prepareCheckoutAction } from "@/actions/checkout";
+import { startPaymentAction } from "@/actions/payments";
 import { Button } from "@/components/ui/button";
 import { FormError, FormField, SubmitButton, TextareaField, fieldErrorsOf } from "@/components/ui/form";
 import type { EvaluatedCart } from "@/features/cart/rules";
@@ -248,18 +249,7 @@ export function CheckoutFlow({ context, cart }: { context: CheckoutContext; cart
                 <dt>Order total</dt>
                 <dd>{formatNaira(summary.subtotal)}</dd>
               </dl>
-              {/* Paystack payment is implemented in Milestone 10. */}
-              <button
-                type="button"
-                disabled
-                aria-describedby="payment-pending"
-                className="mt-2 inline-flex h-11 cursor-not-allowed items-center justify-center rounded-md bg-muted px-6 text-button font-semibold text-muted-foreground"
-              >
-                Pay with Paystack
-              </button>
-              <p id="payment-pending" className="text-caption text-muted-foreground">
-                Online payment is not available yet.
-              </p>
+              <PayWithPaystack summary={summary} />
             </div>
 
             <div className="flex flex-wrap gap-3">
@@ -295,6 +285,29 @@ export function CheckoutFlow({ context, cart }: { context: CheckoutContext; cart
         <p className="text-caption text-muted-foreground">Delivery fee not included.</p>
       </aside>
     </div>
+  );
+}
+
+function PayWithPaystack({ summary }: { summary: CheckoutSummary }) {
+  const [state, action] = useActionState(startPaymentAction, null);
+  return (
+    <form action={action} className="mt-2 flex flex-col gap-3">
+      {/* Identifiers only: the server re-validates everything and calculates the amount. */}
+      <input type="hidden" name="deliveryDate" value={summary.deliveryDate} />
+      <input type="hidden" name="addressId" value={summary.address.id} />
+      <input type="hidden" name="specialNotes" value={summary.specialNotes ?? ""} />
+      <FormError state={state} />
+      {state && !state.success && (state.error.code === "OUT_OF_STOCK" || state.error.code === "PRODUCT_UNAVAILABLE") ? (
+        <Link href="/cart" className="text-body-sm font-medium text-accent underline underline-offset-4">
+          Review your cart
+        </Link>
+      ) : null}
+      <SubmitButton pendingLabel="Connecting to Paystack…">Pay with Paystack</SubmitButton>
+      <p className="text-caption text-muted-foreground">
+        You&apos;ll be taken to Paystack to pay securely, then brought back here. Your items are held
+        for a few minutes while you pay.
+      </p>
+    </form>
   );
 }
 
