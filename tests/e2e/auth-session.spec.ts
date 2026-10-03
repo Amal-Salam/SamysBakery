@@ -67,7 +67,7 @@ test("customer signs in, session survives navigation, and signs out", async ({ p
 
   await signIn(page, customer);
   await expect(page).toHaveURL("/account");
-  await expect(page.getByText("E2E Customer")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Hello, E2E Customer" })).toBeVisible();
 
   // Session persists across navigation; header switches to "Account".
   await page.goto("/");

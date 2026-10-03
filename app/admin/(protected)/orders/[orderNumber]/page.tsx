@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { CancelAndRefund } from "@/components/admin/orders/cancel-and-refund";
 import { OrderStatusBadge, PaymentStatusBadge } from "@/components/admin/orders/order-status-badge";
 import { OrderStatusControl } from "@/components/admin/orders/order-status-control";
 import { getAdminOrder } from "@/features/orders/admin";
@@ -46,6 +47,16 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/order
           Order status
         </h2>
         <OrderStatusControl orderNumber={order.orderNumber} status={order.orderStatus} />
+      </section>
+
+      <section
+        aria-labelledby="cancel-heading"
+        className="flex max-w-xl flex-col gap-3 rounded-lg border border-destructive/40 p-4"
+      >
+        <h2 id="cancel-heading" className="text-heading-3 text-destructive">
+          {order.orderStatus === "CANCELLED" ? "Refund" : "Cancel order"}
+        </h2>
+        <CancelAndRefund order={order} />
       </section>
 
       <div className="grid gap-6 lg:grid-cols-2">

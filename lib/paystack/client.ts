@@ -129,3 +129,17 @@ export async function createRefund(input: {
   );
   return { refundId: String(data.id), status: data.status };
 }
+
+export async function fetchRefund(refundId: string): Promise<{ status: string; transactionReference: string | null }> {
+  const data = await paystackRequest(
+    `/refund/${encodeURIComponent(refundId)}`,
+    z.object({
+      status: z.string(),
+      transaction: z.union([z.object({ reference: z.string().optional() }).passthrough(), z.number(), z.string()]).optional(),
+    }),
+    { method: "GET" }
+  );
+  const transaction = data.transaction;
+  const reference = typeof transaction === "object" && transaction ? (transaction.reference ?? null) : null;
+  return { status: data.status, transactionReference: reference };
+}

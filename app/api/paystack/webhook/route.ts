@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { handleRefundEvent } from "@/features/payments/refunds";
 import { processPayment } from "@/features/payments/service";
 import { isOurReference } from "@/features/payments/rules";
 import { getPaystackEnv } from "@/lib/env.server";
@@ -20,14 +21,25 @@ export async function POST(request: NextRequest) {
   }
 
   // 4. Parse event.
-  let event: { event?: unknown; data?: { reference?: unknown } };
+  let event: {
+    event?: unknown;
+    data?: { reference?: unknown; transaction_reference?: unknown; transaction?: { reference?: unknown } };
+  };
   try {
     event = JSON.parse(rawBody);
   } catch {
     return NextResponse.json({ received: false }, { status: 400 });
   }
 
-  // Refund events are reconciled in Milestone 14; acknowledge everything else.
+  // Refund events (owner decision): identify our payment, then verify the
+  // refund's status with Paystack's API rather than trusting the event body.
+  if (typeof event.event === "string" && event.event.startsWith("refund.")) {
+    const paymentReference = event.data?.transaction_reference ?? event.data?.transaction?.reference;
+    if (isOurReference(paymentReference)) await handleRefundEvent(paymentReference);
+    return NextResponse.json({ received: true });
+  }
+
+  // Everything else except successful charges is acknowledged and ignored.
   if (event.event !== "charge.success") {
     return NextResponse.json({ received: true });
   }

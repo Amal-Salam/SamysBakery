@@ -50,6 +50,20 @@ async function sendWebhook(tx) {
   }).catch(() => undefined);
 }
 
+async function sendRefundWebhook(refund) {
+  if (!WEBHOOK_URL) return;
+  const body = JSON.stringify({
+    event: `refund.${refund.status}`,
+    data: { status: refund.status, transaction_reference: refund.transaction, id: refund.id },
+  });
+  const signature = createHmac("sha512", SECRET).update(body).digest("hex");
+  await fetch(WEBHOOK_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-paystack-signature": signature },
+    body,
+  }).catch(() => undefined);
+}
+
 const server = createServer(async (req, res) => {
   const url = new URL(req.url ?? "/", `http://127.0.0.1:${PORT}`);
   const parts = url.pathname.split("/").filter(Boolean);
@@ -63,6 +77,15 @@ const server = createServer(async (req, res) => {
     if (!tx) return json(res, 404, { ok: false });
     Object.assign(tx, overrides);
     return json(res, 200, { ok: true, tx });
+  }
+  // Test hook: change a refund's status at "Paystack" and optionally send the signed webhook.
+  if (req.method === "POST" && url.pathname === "/__refund") {
+    const { transaction, status, sendWebhook: notify } = JSON.parse((await readBody(req)) || "{}");
+    const refund = refunds.findLast((r) => r.transaction === transaction);
+    if (!refund) return json(res, 404, { ok: false });
+    refund.status = status;
+    if (notify) await sendRefundWebhook(refund);
+    return json(res, 200, { ok: true, refund });
   }
   if (req.method === "GET" && url.pathname === "/__state") {
     return json(res, 200, { transactions: [...transactions.values()], refunds });
@@ -139,6 +162,16 @@ const server = createServer(async (req, res) => {
         currency: tx.verify_currency ?? tx.currency,
         paid_at: tx.paid_at,
       },
+    });
+  }
+
+  if (req.method === "GET" && parts[0] === "refund" && parts[1]) {
+    const refund = refunds.find((r) => String(r.id) === parts[1]);
+    if (!refund) return json(res, 404, { status: false, message: "Refund not found" });
+    return json(res, 200, {
+      status: true,
+      message: "Refund retrieved",
+      data: { id: refund.id, status: refund.status, transaction: { reference: refund.transaction } },
     });
   }
 

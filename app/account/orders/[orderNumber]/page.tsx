@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { cancelMyOrderAction } from "@/actions/orders";
+import { ConfirmActionDialog } from "@/components/admin/confirm-action-dialog";
 import { OrderStatusBadge, PaymentStatusBadge } from "@/components/admin/orders/order-status-badge";
+import { isCancellable } from "@/features/orders/rules";
 import { getMyOrder } from "@/features/orders/customer";
 import { formatNaira } from "@/features/weekly-menu/rules";
 import { formatLongDate } from "@/lib/utils/dates";
@@ -72,6 +75,33 @@ export default async function MyOrderPage({ params }: PageProps<"/account/orders
           {order.specialNotes ?? "None"}
         </p>
       </section>
+
+      {isCancellable(order.orderStatus) ? (
+        <section aria-labelledby="cancel-heading" className="flex flex-col gap-3 rounded-lg border border-border p-4">
+          <h2 id="cancel-heading" className="text-heading-3 text-primary">
+            Need to cancel?
+          </h2>
+          <p className="text-body-sm text-muted-foreground">
+            You can cancel until your order is ready. Refunds are handled by the bakery after cancellation.
+          </p>
+          <ConfirmActionDialog
+            trigger="Cancel order"
+            title={`Cancel ${order.orderNumber}?`}
+            description={<p>The bakery will stop preparing your order. Refunds are handled by the bakery separately.</p>}
+            confirmLabel="Yes, cancel my order"
+            pendingLabel="Cancelling…"
+            action={cancelMyOrderAction}
+            fields={{ orderNumber: order.orderNumber }}
+          />
+        </section>
+      ) : order.orderStatus === "CANCELLED" ? (
+        <p role="status" className="rounded-md bg-muted px-4 py-3 text-body-sm">
+          This order was cancelled.{" "}
+          {order.paymentStatus === "REFUNDED"
+            ? "Your payment has been refunded."
+            : "Any refund is handled by the bakery and can take a few business days."}
+        </p>
+      ) : null}
     </div>
   );
 }

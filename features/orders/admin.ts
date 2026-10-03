@@ -49,6 +49,13 @@ export type AdminOrderDetail = AdminOrderSummary & {
   paidAt: string;
   items: { id: string; name: string; quantity: number; unitPrice: number; lineTotal: number }[];
   history: { at: string; from: string; to: string; direction: string; reason: string | null }[];
+  refund: {
+    status: "NOT_REFUNDED" | "REFUNDED";
+    providerStatus: string | null;
+    amount: number;
+    requestedAt: string | null;
+    processedAt: string | null;
+  } | null;
 };
 
 export async function getAdminOrder(orderNumber: string): Promise<AdminOrderDetail | null> {
@@ -58,7 +65,8 @@ export async function getAdminOrder(orderNumber: string): Promise<AdminOrderDeta
     .select(
       `id, order_number, recipient_name, email, phone, delivery_address, delivery_city, delivery_state,
        delivery_additional_info, special_notes, delivery_date, subtotal, payment_status, order_status,
-       created_at, paid_at, order_items ( id, product_name, quantity, unit_price, line_total )`
+       created_at, paid_at, order_items ( id, product_name, quantity, unit_price, line_total ),
+       refunds ( status, provider_status, amount, requested_at, processed_at )`
     )
     .eq("order_number", orderNumber)
     .maybeSingle();
@@ -70,7 +78,7 @@ export async function getAdminOrder(orderNumber: string): Promise<AdminOrderDeta
     .select("created_at, metadata")
     .eq("entity_type", "order")
     .eq("entity_id", order.id)
-    .eq("action", "ORDER_STATUS_CHANGED")
+    .in("action", ["ORDER_STATUS_CHANGED", "ORDER_CANCELLED"])
     .order("created_at", { ascending: false });
 
   return {
@@ -95,12 +103,21 @@ export async function getAdminOrder(orderNumber: string): Promise<AdminOrderDeta
       unitPrice: Number(item.unit_price),
       lineTotal: Number(item.line_total),
     })),
+    refund: order.refunds[0]
+      ? {
+          status: order.refunds[0].status,
+          providerStatus: order.refunds[0].provider_status,
+          amount: Number(order.refunds[0].amount),
+          requestedAt: order.refunds[0].requested_at,
+          processedAt: order.refunds[0].processed_at,
+        }
+      : null,
     history: (audit ?? []).map((entry) => {
       const meta = entry.metadata as Record<string, string | undefined>;
       return {
         at: entry.created_at,
         from: meta.from ?? "",
-        to: meta.to ?? "",
+        to: meta.to ?? "CANCELLED",
         direction: meta.direction ?? "",
         reason: meta.reason ?? null,
       };

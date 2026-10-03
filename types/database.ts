@@ -838,6 +838,10 @@ export type Database = {
         }
         Returns: number
       }
+      apply_refund_status: {
+        Args: { reported_status: string; target_refund_id: string }
+        Returns: string
+      }
       archive_product: { Args: { target_product_id: string }; Returns: Json }
       availability_status: {
         Args: { available: number; low_stock_threshold: number }
@@ -846,6 +850,10 @@ export type Database = {
       available_quantity: {
         Args: { target_weekly_menu_product_id: string }
         Returns: number
+      }
+      cancel_order: {
+        Args: { reason?: string; target_order_number: string }
+        Returns: Json
       }
       claim_confirmation_email: {
         Args: { target_order_id: string }
@@ -927,6 +935,7 @@ export type Database = {
         Args: { target_payment_id: string }
         Returns: number
       }
+      request_refund: { Args: { target_order_number: string }; Returns: Json }
       reservation_timeout_minutes: { Args: never; Returns: number }
       reserve_checkout_inventory: {
         Args: {
