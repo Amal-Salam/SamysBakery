@@ -73,6 +73,14 @@ describe("service-role isolation", () => {
     expect(readers).toEqual(["lib/env.server.ts"]);
   });
 
+  it("the Resend API key is read only in lib/env.server.ts", () => {
+    const readers = files
+      .filter((file) => file.text.includes("process.env.RESEND_API_KEY"))
+      .map((file) => file.rel);
+    expect(readers).toEqual(["lib/env.server.ts"]);
+    expect(readFileSync(path.join(ROOT, "lib/resend/client.ts"), "utf8")).toMatch(/^import "server-only";/m);
+  });
+
   it("Paystack API calls only happen in the server-only integration module", () => {
     const callers = files.filter((file) => file.text.includes("api.paystack.co")).map((file) => file.rel);
     expect(callers).toEqual(["lib/env.server.ts"]);

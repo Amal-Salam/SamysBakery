@@ -15,7 +15,14 @@ const mockPaystack = {
   PAYSTACK_SECRET_KEY: "sk_test_mock_e2e",
   PAYSTACK_API_BASE: `http://127.0.0.1:${MOCK_PAYSTACK_PORT}`,
 };
-Object.assign(process.env, localSupabase, mockPaystack);
+// …and a local mock of the Resend API.
+const MOCK_RESEND_PORT = 3998;
+const mockResend = {
+  RESEND_API_KEY: "re_test_mock_e2e",
+  RESEND_FROM_EMAIL: "Samy's Bakery <orders@example.com>",
+  RESEND_API_BASE: `http://127.0.0.1:${MOCK_RESEND_PORT}`,
+};
+Object.assign(process.env, localSupabase, mockPaystack, mockResend);
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -73,6 +80,12 @@ export default defineConfig({
       },
     },
     {
+      command: "node tests/e2e/mock-resend.mjs",
+      url: `http://127.0.0.1:${MOCK_RESEND_PORT}/health`,
+      reuseExistingServer: false,
+      env: { MOCK_RESEND_PORT: String(MOCK_RESEND_PORT), RESEND_API_KEY: mockResend.RESEND_API_KEY },
+    },
+    {
       command: `npm run build && npm run start -- --port ${PORT}`,
       url: baseURL,
       reuseExistingServer: false,
@@ -80,6 +93,7 @@ export default defineConfig({
       env: {
         ...localSupabase,
         ...mockPaystack,
+        ...mockResend,
         NEXT_PUBLIC_APP_URL: baseURL,
         NEXT_DIST_DIR: ".next-e2e",
       },

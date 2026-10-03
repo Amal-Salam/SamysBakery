@@ -22,7 +22,7 @@ export default async function OrderConfirmationPage({ params }: PageProps<"/orde
   const { data: order } = await supabase
     .from("orders")
     .select(
-      `order_number, delivery_date, recipient_name, phone, delivery_address, delivery_city, delivery_state,
+      `order_number, email, delivery_date, recipient_name, phone, delivery_address, delivery_city, delivery_state,
        delivery_additional_info, special_notes, subtotal,
        order_items ( id, product_name, quantity, unit_price, line_total )`
     )
@@ -38,6 +38,9 @@ export default async function OrderConfirmationPage({ params }: PageProps<"/orde
         <p className="font-heading text-heading-2">{order.order_number}</p>
         <p className="text-body-lg text-muted-foreground">
           Thank you! Your payment was received and your order is with the bakery.
+        </p>
+        <p className="text-body-sm text-muted-foreground">
+          A confirmation email is on its way to <strong className="text-foreground">{order.email}</strong>.
         </p>
       </div>
 

@@ -167,6 +167,8 @@ select is(public.release_inventory_reservation((select (v ->> 'payment_id')::uui
   'releasing twice is harmless');
 
 -- ---------- expiry ----------
+-- Sweep holds left by other runs first, so only this test's hold is counted.
+do $$ begin perform public.expire_temporary_reservations(); end $$;
 update public.inventory_reservations set expires_at = now() - interval '1 second'
  where payment_id = (select (v ->> 'payment_id')::uuid from ctx where k = 'b1');
 select is(available_quantity('30000000-0000-0000-0000-000000000001'), 3, 'an expired hold stops counting immediately');

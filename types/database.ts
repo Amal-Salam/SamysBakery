@@ -366,6 +366,8 @@ export type Database = {
       orders: {
         Row: {
           cancelled_at: string | null
+          confirmation_email_claimed_at: string | null
+          confirmation_email_sent_at: string | null
           created_at: string
           delivered_at: string | null
           delivery_additional_info: string | null
@@ -388,6 +390,8 @@ export type Database = {
         }
         Insert: {
           cancelled_at?: string | null
+          confirmation_email_claimed_at?: string | null
+          confirmation_email_sent_at?: string | null
           created_at?: string
           delivered_at?: string | null
           delivery_additional_info?: string | null
@@ -410,6 +414,8 @@ export type Database = {
         }
         Update: {
           cancelled_at?: string | null
+          confirmation_email_claimed_at?: string | null
+          confirmation_email_sent_at?: string | null
           created_at?: string
           delivered_at?: string | null
           delivery_additional_info?: string | null
@@ -840,6 +846,14 @@ export type Database = {
       available_quantity: {
         Args: { target_weekly_menu_product_id: string }
         Returns: number
+      }
+      claim_confirmation_email: {
+        Args: { target_order_id: string }
+        Returns: boolean
+      }
+      complete_confirmation_email: {
+        Args: { succeeded: boolean; target_order_id: string }
+        Returns: undefined
       }
       confirm_payment_order: {
         Args: {

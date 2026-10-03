@@ -46,3 +46,28 @@ export function getPaystackEnv() {
   }
   return parsed.data;
 }
+
+const RESEND_DEFAULT_BASE = "https://api.resend.com";
+
+const resendEnvSchema = z.object({
+  RESEND_API_KEY: z.string().min(1),
+  // e.g. "Samy's Bakery <orders@your-verified-domain.com>"
+  RESEND_FROM_EMAIL: z.string().min(3),
+  RESEND_API_BASE: z
+    .string()
+    .default(RESEND_DEFAULT_BASE)
+    .refine(
+      (value) => value === RESEND_DEFAULT_BASE || /^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(value),
+      "must be https://api.resend.com (or a localhost mock in tests)"
+    ),
+});
+
+/** Null when email isn't configured; the caller logs and skips (orders never depend on email). */
+export function getResendEnv() {
+  const parsed = resendEnvSchema.safeParse({
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL,
+    RESEND_API_BASE: process.env.RESEND_API_BASE || undefined,
+  });
+  return parsed.success ? parsed.data : null;
+}

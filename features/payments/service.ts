@@ -1,6 +1,9 @@
 import "server-only";
 
+import { after } from "next/server";
+
 import { releaseReservation, reserveCheckout } from "@/features/inventory/service";
+import { sendOrderConfirmationOnce } from "@/features/notifications/order-confirmation";
 import { publicEnv } from "@/lib/env";
 import { AppError, fromDbError } from "@/lib/errors";
 import { createRefund, initializeTransaction, PaystackError, verifyTransaction } from "@/lib/paystack/client";
@@ -75,6 +78,7 @@ type ConfirmResult = {
     | "AMOUNT_MISMATCH"
     | "CURRENCY_MISMATCH"
     | "UNKNOWN_REFERENCE";
+  order_id?: string;
   order_number?: string;
   user_id?: string;
   refund_id?: string;
@@ -100,6 +104,7 @@ export async function processPayment(reference: string): Promise<PaymentOutcome>
   // Fast path: already an order (no need to call Paystack again).
   if (payment.order_id) {
     const { data: order } = await admin.from("orders").select("order_number").eq("id", payment.order_id).single();
+    scheduleConfirmationEmail(payment.order_id);
     return { kind: "CONFIRMED", orderNumber: order!.order_number, userId: payment.user_id };
   }
 
@@ -141,6 +146,7 @@ export async function processPayment(reference: string): Promise<PaymentOutcome>
   switch (result.outcome) {
     case "CREATED":
     case "ALREADY_PROCESSED":
+      scheduleConfirmationEmail(result.order_id!);
       return { kind: "CONFIRMED", orderNumber: result.order_number!, userId: result.user_id! };
     case "REFUND_REQUIRED":
     case "REFUND_ALREADY_REQUESTED":
@@ -153,6 +159,17 @@ export async function processPayment(reference: string): Promise<PaymentOutcome>
     default:
       return { kind: "UNKNOWN_REFERENCE" };
   }
+}
+
+/**
+ * Sends the confirmation email after the response (never delays the customer's
+ * redirect or Paystack's acknowledgement). Exactly-once and retry-safe: the
+ * database claim ignores repeats, and an earlier failed send is retried here.
+ */
+function scheduleConfirmationEmail(orderId: string) {
+  after(async () => {
+    await sendOrderConfirmationOnce(orderId);
+  });
 }
 
 /**

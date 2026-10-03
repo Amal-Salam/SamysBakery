@@ -10,6 +10,16 @@ import { createAccount, service, uniqueSuffix, type Account } from "./helpers";
 // so stock never interferes between tests.
 
 const MOCK = "http://127.0.0.1:3999";
+const MOCK_RESEND = "http://127.0.0.1:3998";
+
+async function emailsTo(request: APIRequestContext, to: string) {
+  return (await (await request.get(`${MOCK_RESEND}/__emails?to=${encodeURIComponent(to)}`)).json()) as {
+    subject: string;
+    html: string;
+    text: string;
+    from: string;
+  }[];
+}
 const SECRET = "sk_test_mock_e2e";
 type Fixture = { menuId: string };
 let menuId: string;
@@ -147,6 +157,20 @@ test("successful payment creates exactly one order; duplicate webhooks and refre
 
   const { count } = await service.from("orders").select("id", { count: "exact", head: true }).eq("user_id", customer.id);
   expect(count).toBe(1);
+
+  // Exactly one confirmation email, despite the webhook + return page + 3 duplicates + refresh.
+  await expect.poll(async () => (await emailsTo(request, customer.email)).length, { timeout: 15_000 }).toBe(1);
+  const [email] = await emailsTo(request, customer.email);
+  expect(email.subject).toBe(`Your Samy's Bakery order ${orderNumber} is confirmed`);
+  expect(email.from).toBe("Samy's Bakery <orders@example.com>");
+  for (const detail of [orderNumber, product.name, "₦13,000", "5 Test Close, Abuja, FCT"]) {
+    expect(email.text).toContain(detail);
+  }
+  await page.waitForTimeout(1500);
+  expect(await emailsTo(request, customer.email)).toHaveLength(1);
+  const { data: sent } = await service.from("orders").select("confirmation_email_sent_at").eq("id", order!.id).single();
+  expect(sent?.confirmation_email_sent_at).not.toBeNull();
+
   const { count: audits } = await service
     .from("audit_logs").select("id", { count: "exact", head: true }).eq("action", "ORDER_CREATED").eq("entity_id", order!.id);
   expect(audits).toBe(1);
@@ -277,3 +301,33 @@ test("customer closes the browser after paying: the webhook still creates the or
   const payment = await paymentByReference(reference);
   expect(payment.status).toBe("PAID");
 });
+
+test("an email outage never affects the paid order, and the email is retried", async ({ page, request }) => {
+  const product = await productWithStock(2);
+  const customer = await customerWithCart(product.id, 1);
+  await request.post(`${MOCK_RESEND}/__control`, { data: { failFor: customer.email } });
+
+  const reference = await goToPaystack(page, customer);
+  await control(request, reference, { skipWebhook: true });
+  await page.getByRole("button", { name: "Pay now" }).click();
+
+  // The order is confirmed even though Resend is down.
+  await expect(page).toHaveURL(/\/order-confirmation\/SAM-\d{4,}$/);
+  const payment = await paymentByReference(reference);
+  expect(payment.status).toBe("PAID");
+  await page.waitForTimeout(1500);
+  expect(await emailsTo(request, customer.email)).toHaveLength(0);
+  const { data: before } = await service
+    .from("orders").select("confirmation_email_sent_at, confirmation_email_claimed_at").eq("id", payment.order_id!).single();
+  expect(before).toEqual({ confirmation_email_sent_at: null, confirmation_email_claimed_at: null });
+
+  // Resend recovers; the next processing of the payment sends it, once.
+  await request.post(`${MOCK_RESEND}/__control`, { data: { recover: customer.email } });
+  await page.goto(`/checkout/complete?reference=${reference}`);
+  await expect(page).toHaveURL(/\/order-confirmation\//);
+  await expect.poll(async () => (await emailsTo(request, customer.email)).length, { timeout: 15_000 }).toBe(1);
+  await page.goto(`/checkout/complete?reference=${reference}`);
+  await page.waitForTimeout(1500);
+  expect(await emailsTo(request, customer.email)).toHaveLength(1);
+});
+
