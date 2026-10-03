@@ -813,6 +813,12 @@ export type Database = {
         Returns: number
       }
       create_weekly_menu: { Args: never; Returns: string }
+      delete_address: {
+        Args: { target_address_id: string }
+        Returns: undefined
+      }
+      delivery_date_status: { Args: { requested: string }; Returns: string }
+      eligible_delivery_dates: { Args: never; Returns: string[] }
       expire_ended_menus: { Args: never; Returns: number }
       generate_order_number: { Args: never; Returns: string }
       get_published_menu_availability: {
@@ -831,12 +837,18 @@ export type Database = {
       is_published_menu: { Args: { menu_id: string }; Returns: boolean }
       lagos_today: { Args: never; Returns: string }
       menu_week_start_for: { Args: { today: string }; Returns: string }
+      order_cutoff_time: { Args: never; Returns: string }
       owns_cart: { Args: { target_cart_id: string }; Returns: boolean }
       owns_order: { Args: { target_order_id: string }; Returns: boolean }
       publish_weekly_menu: {
         Args: { target_menu_id: string }
         Returns: undefined
       }
+      set_default_address: {
+        Args: { target_address_id: string }
+        Returns: undefined
+      }
+      set_order_cutoff: { Args: { new_cutoff: string }; Returns: undefined }
       unpublish_weekly_menu: {
         Args: { target_menu_id: string }
         Returns: undefined

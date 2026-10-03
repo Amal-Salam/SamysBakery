@@ -57,3 +57,40 @@ function formatShortDate(isoDate: string, withYear: boolean): string {
 export function formatWeekRange(weekStart: string, weekEnd: string): string {
   return `${formatShortDate(weekStart, false)} – ${formatShortDate(weekEnd, true)}`;
 }
+
+/** "Today, Tue 6 Oct" / "Tomorrow, Wed 7 Oct" / "Thu 8 Oct" for delivery choices. */
+export function formatDeliveryDate(isoDate: string, today: string): string {
+  const label = formatShortDate(isoDate, false);
+  if (isoDate === today) return `Today, ${label}`;
+  if (isoDate === addDays(today, 1)) return `Tomorrow, ${label}`;
+  return label;
+}
+
+/** "Tuesday 6 October 2026" for summaries. */
+export function formatLongDate(isoDate: string): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: "UTC",
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(toUtcDate(isoDate));
+}
+
+/** "17:00" → "5:00 PM" */
+export function formatClockTime(hhmm: string): string {
+  const [hours, minutes] = hhmm.split(":").map(Number);
+  const suffix = hours >= 12 ? "PM" : "AM";
+  const hour12 = hours % 12 === 0 ? 12 : hours % 12;
+  return `${hour12}:${String(minutes).padStart(2, "0")} ${suffix}`;
+}
+
+/** Current Lagos wall-clock time as "HH:MM". */
+export function lagosTimeNow(now: Date = new Date()): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: BUSINESS_TIME_ZONE,
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(now);
+}

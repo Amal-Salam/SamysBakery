@@ -8,6 +8,7 @@ import {
   createWeek,
   publishMenu,
   removeMenuProduct,
+  setOrderCutoff,
   unpublishMenu,
   updateMenuProduct,
 } from "@/features/weekly-menu/service";
@@ -127,6 +128,24 @@ export async function removeMenuProductAction(
     const id = uuidSchema.safeParse(formData.get("id"));
     if (!id.success) return fail("VALIDATION_ERROR", "Invalid menu product.");
     await removeMenuProduct(id.data);
+    revalidateMenuViews();
+    return ok(null);
+  } catch (error) {
+    return toFailure(error);
+  }
+}
+
+export async function setOrderCutoffAction(
+  _prev: ActionResult | null,
+  formData: FormData
+): Promise<ActionResult> {
+  try {
+    await assertAdmin();
+    const cutoff = String(formData.get("cutoff") ?? "").trim();
+    if (!/^([01][0-9]|2[0-3]):[0-5][0-9]$/.test(cutoff)) {
+      return fail("VALIDATION_ERROR", "Enter a time like 17:00.", { cutoff: ["Enter a time like 17:00."] });
+    }
+    await setOrderCutoff(cutoff);
     revalidateMenuViews();
     return ok(null);
   } catch (error) {

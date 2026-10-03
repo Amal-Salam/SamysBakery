@@ -6,6 +6,7 @@ import { ConfirmActionDialog } from "@/components/admin/confirm-action-dialog";
 import { AddMenuProductForm } from "@/components/admin/menu/add-menu-product-form";
 import { MenuProductEditor } from "@/components/admin/menu/menu-product-editor";
 import { MenuStatusBadge } from "@/components/admin/menu/menu-status-badge";
+import { OrderCutoffForm } from "@/components/admin/menu/order-cutoff-form";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/states";
 import {
@@ -13,15 +14,17 @@ import {
   listAddableProducts,
   listMenuHistory,
 } from "@/features/weekly-menu/queries";
+import { getOrderCutoff } from "@/features/weekly-menu/service";
 import { formatWeekRange } from "@/lib/utils/dates";
 
 export const metadata: Metadata = { title: "Current Weekly Menu" };
 
 export default async function CurrentMenuPage({ searchParams }: PageProps<"/admin/menu">) {
-  const [{ created }, menu, history] = await Promise.all([
+  const [{ created }, menu, history, cutoff] = await Promise.all([
     searchParams,
     getCurrentAdminMenu(),
     listMenuHistory(),
+    getOrderCutoff(),
   ]);
   const addable = menu ? await listAddableProducts(menu.id) : [];
 
@@ -119,6 +122,13 @@ export default async function CurrentMenuPage({ searchParams }: PageProps<"/admi
           </section>
         </>
       )}
+
+      <section aria-labelledby="cutoff-heading" className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-4">
+        <h2 id="cutoff-heading" className="text-heading-3 text-primary">
+          Ordering cutoff
+        </h2>
+        <OrderCutoffForm cutoff={cutoff} />
+      </section>
 
       <section aria-labelledby="history-heading" className="flex flex-col gap-3">
         <h2 id="history-heading" className="text-heading-2 text-primary">

@@ -195,3 +195,27 @@ test("after the first order, name, price and quantity are locked", async ({ page
   expect(Number(data?.price)).toBe(6500);
   expect(data?.description_snapshot).toBe("Tangy, chewy crumb with a blistered crust.");
 });
+
+test("admin changes the ordering cutoff (audited)", async ({ page }) => {
+  await signInAsAdmin(page, admin);
+  await page.goto("/admin/menu");
+  const section = page.getByRole("region", { name: "Ordering cutoff" });
+  await expect(section.getByLabel("Same-day cutoff")).toHaveValue("17:00");
+  await section.getByLabel("Same-day cutoff").fill("16:30");
+  await section.getByRole("button", { name: "Save cutoff" }).click();
+  await expect(section.getByRole("status").filter({ hasText: "Ordering cutoff saved." })).toBeVisible();
+
+  const { data: audit } = await service
+    .from("audit_logs")
+    .select("metadata")
+    .eq("action", "ORDER_CUTOFF_CHANGED")
+    .eq("actor_user_id", admin.id)
+    .single();
+  expect(audit?.metadata).toMatchObject({ from: "17:00", to: "16:30" });
+
+  // Restore the owner's value for the rest of the suite.
+  await section.getByLabel("Same-day cutoff").fill("17:00");
+  await section.getByRole("button", { name: "Save cutoff" }).click();
+  await expect(section.getByRole("status").filter({ hasText: "Ordering cutoff saved." })).toBeVisible();
+});
+

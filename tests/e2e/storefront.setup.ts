@@ -19,6 +19,9 @@ setup("storefront shows the empty state when no menu is published", async ({ pag
 });
 
 setup("publish the storefront fixture menu", async () => {
+  // Deterministic delivery dates whatever the time of day (restored in teardown).
+  await service.from("system_settings").upsert({ key: "ORDER_CUTOFF_TIME", value: "23:59" });
+
   const suffix = uniqueSuffix();
   const { data: categories } = await service.from("categories").select("id, slug");
   const categoryId = (slug: string) => categories!.find((category) => category.slug === slug)?.id ?? null;

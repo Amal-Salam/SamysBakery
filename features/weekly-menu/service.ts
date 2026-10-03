@@ -131,3 +131,17 @@ export async function removeMenuProduct(id: string): Promise<void> {
   if (error) throw fromDbError(error, MENU_MESSAGES);
   if (data.length === 0) throw new AppError("NOT_FOUND", "That menu product could not be found.");
 }
+
+/** Ordering cutoff (system setting). Audited in the database; admin only. */
+export async function setOrderCutoff(cutoff: string): Promise<void> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("set_order_cutoff", { new_cutoff: cutoff });
+  if (error) throw fromDbError(error, { INVALID_CUTOFF: "Enter a time like 17:00." });
+}
+
+export async function getOrderCutoff(): Promise<string> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("order_cutoff_time");
+  if (error) throw fromDbError(error);
+  return String(data).slice(0, 5);
+}

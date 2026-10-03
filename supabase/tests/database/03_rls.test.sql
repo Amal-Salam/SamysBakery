@@ -77,7 +77,7 @@ insert into public.refunds (order_id, payment_id, amount, created_by) values
    '00000000-0000-0000-0000-0000000000ad');
 insert into public.audit_logs (actor_user_id, action, entity_type) values
   ('00000000-0000-0000-0000-0000000000ad', 'MENU_PUBLISHED', 'weekly_menu');
-insert into public.system_settings (key, value) values ('ORDER_CUTOFF_TIME', '"12:00"');
+insert into public.system_settings (key, value) values ('ORDER_CUTOFF_TIME', '"12:00"') on conflict (key) do nothing;
 
 -- =====================================================================
 -- Anonymous visitor
