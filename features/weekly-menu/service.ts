@@ -145,3 +145,17 @@ export async function getOrderCutoff(): Promise<string> {
   if (error) throw fromDbError(error);
   return String(data).slice(0, 5);
 }
+
+/** Payment hold time for temporary reservations (minutes). Admin only, audited. */
+export async function setReservationTimeout(minutes: number): Promise<void> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("set_reservation_timeout", { minutes });
+  if (error) throw fromDbError(error, { INVALID_TIMEOUT: "Choose between 5 and 120 minutes." });
+}
+
+export async function getReservationTimeout(): Promise<number> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("reservation_timeout_minutes");
+  if (error) throw fromDbError(error);
+  return Number(data);
+}

@@ -9,6 +9,7 @@ import {
   publishMenu,
   removeMenuProduct,
   setOrderCutoff,
+  setReservationTimeout,
   unpublishMenu,
   updateMenuProduct,
 } from "@/features/weekly-menu/service";
@@ -147,6 +148,25 @@ export async function setOrderCutoffAction(
     }
     await setOrderCutoff(cutoff);
     revalidateMenuViews();
+    return ok(null);
+  } catch (error) {
+    return toFailure(error);
+  }
+}
+
+export async function setReservationTimeoutAction(
+  _prev: ActionResult | null,
+  formData: FormData
+): Promise<ActionResult> {
+  try {
+    await assertAdmin();
+    const minutes = Number(formData.get("minutes"));
+    if (!Number.isInteger(minutes) || minutes < 5 || minutes > 120) {
+      const message = "Choose between 5 and 120 minutes.";
+      return fail("VALIDATION_ERROR", message, { minutes: [message] });
+    }
+    await setReservationTimeout(minutes);
+    revalidatePath(MENU_PATH);
     return ok(null);
   } catch (error) {
     return toFailure(error);

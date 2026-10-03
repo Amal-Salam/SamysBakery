@@ -803,6 +803,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_inventory: {
+        Args: {
+          quantity: number
+          reason: string
+          target_weekly_menu_product_id: string
+        }
+        Returns: number
+      }
       archive_product: { Args: { target_product_id: string }; Returns: Json }
       availability_status: {
         Args: { available: number; low_stock_threshold: number }
@@ -820,6 +828,7 @@ export type Database = {
       delivery_date_status: { Args: { requested: string }; Returns: string }
       eligible_delivery_dates: { Args: never; Returns: string[] }
       expire_ended_menus: { Args: never; Returns: number }
+      expire_temporary_reservations: { Args: never; Returns: number }
       generate_order_number: { Args: never; Returns: string }
       get_published_menu_availability: {
         Args: never
@@ -844,11 +853,29 @@ export type Database = {
         Args: { target_menu_id: string }
         Returns: undefined
       }
+      release_inventory_reservation: {
+        Args: { target_payment_id: string }
+        Returns: number
+      }
+      release_payment_internal: {
+        Args: { target_payment_id: string }
+        Returns: number
+      }
+      reservation_timeout_minutes: { Args: never; Returns: number }
+      reserve_checkout_inventory: {
+        Args: {
+          address_id: string
+          delivery_date: string
+          special_notes: string
+        }
+        Returns: Json
+      }
       set_default_address: {
         Args: { target_address_id: string }
         Returns: undefined
       }
       set_order_cutoff: { Args: { new_cutoff: string }; Returns: undefined }
+      set_reservation_timeout: { Args: { minutes: number }; Returns: undefined }
       unpublish_weekly_menu: {
         Args: { target_menu_id: string }
         Returns: undefined

@@ -199,7 +199,7 @@ test("after the first order, name, price and quantity are locked", async ({ page
 test("admin changes the ordering cutoff (audited)", async ({ page }) => {
   await signInAsAdmin(page, admin);
   await page.goto("/admin/menu");
-  const section = page.getByRole("region", { name: "Ordering cutoff" });
+  const section = page.getByRole("region", { name: "Ordering settings" });
   await expect(section.getByLabel("Same-day cutoff")).toHaveValue("17:00");
   await section.getByLabel("Same-day cutoff").fill("16:30");
   await section.getByRole("button", { name: "Save cutoff" }).click();
