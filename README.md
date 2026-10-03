@@ -29,10 +29,32 @@ Open http://localhost:3000.
 | `npm run start`     | Serve the production build                |
 | `npm run lint`      | ESLint                                    |
 | `npm run typecheck` | TypeScript type check                     |
-| `npm test`          | Unit / integration / security (Vitest)    |
+| `npm test`          | Unit tests (Vitest, offline)              |
+| `npm run test:db`   | Integration + security tests (linked Supabase; creates and removes throwaway users) |
 | `npm run test:e2e`  | End-to-end tests (Playwright)             |
+| `npm run db:push`   | Apply migrations to the linked Supabase project |
+| `npm run db:types`  | Regenerate `types/database.ts` from the linked project |
+| `npm run admin:promote` | Promote `ADMIN_BOOTSTRAP_EMAIL` (or an email argument) to ADMIN |
 
 First-time E2E setup: `npx playwright install chromium`.
+
+## Supabase
+
+Link the CLI once, in your own terminal (credentials stay in your keychain):
+
+```bash
+npx supabase login
+npx supabase link --project-ref <your-project-ref>
+npm run db:push
+```
+
+In the Supabase dashboard → Authentication → URL Configuration, add
+`<NEXT_PUBLIC_APP_URL>/auth/callback` to the redirect allow-list.
+
+## Admin accounts
+
+There is one admin role. To create an admin: sign up normally, verify the email, then run
+`npm run admin:promote` (uses `ADMIN_BOOTSTRAP_EMAIL`) or `npm run admin:promote -- someone@example.com`.
 
 ## Design tokens
 

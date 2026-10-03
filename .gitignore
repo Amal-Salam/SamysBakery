@@ -44,3 +44,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local backup of the wiped v1 schema data (never commit)
+/.v1-backup/

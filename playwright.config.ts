@@ -9,6 +9,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   reporter: "list",
+  // Signed-in flows make several round trips to the hosted Supabase project.
+  expect: { timeout: 15_000 },
   use: {
     baseURL,
     trace: "on-first-retry",

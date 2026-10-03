@@ -16,7 +16,7 @@ test.describe("application foundation", () => {
 
     const mainNav = page.getByRole("navigation", { name: "Main" });
     await expect(mainNav.getByRole("link", { name: "Menu" })).toBeVisible();
-    await expect(mainNav.getByRole("link", { name: "Account" })).toBeVisible();
+    await expect(mainNav.getByRole("link", { name: "Sign in" })).toBeVisible();
     await expect(mainNav.getByRole("link", { name: "Cart" })).toBeVisible();
     await expect(mainNav.getByRole("link", { name: /admin/i })).toHaveCount(0);
 

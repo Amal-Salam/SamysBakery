@@ -1,15 +1,20 @@
 import Link from "next/link";
 
+import { getCurrentUser } from "@/lib/security/auth";
+
 // Admin navigation must never appear here (Design System §4.1).
 // "About" is omitted until an About route/copy is approved.
-// Cart count and auth-aware account entry arrive with their milestones.
-const navLinks = [
-  { href: "/menu", label: "Menu" },
-  { href: "/account", label: "Account" },
-  { href: "/cart", label: "Cart" },
-] as const;
+// Cart count arrives with the Cart milestone.
+export async function SiteHeader() {
+  const user = await getCurrentUser();
+  const navLinks = [
+    { href: "/menu", label: "Menu" },
+    user
+      ? { href: "/account", label: "Account" }
+      : { href: "/login", label: "Sign in" },
+    { href: "/cart", label: "Cart" },
+  ];
 
-export function SiteHeader() {
   return (
     <header className="border-b border-border bg-background">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
