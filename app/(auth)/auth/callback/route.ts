@@ -18,6 +18,19 @@ export async function GET(request: NextRequest) {
     if (!error) {
       return NextResponse.redirect(new URL(next, appUrl));
     }
+    console.warn("[auth/callback] code exchange failed", {
+      code: error.code,
+      status: error.status,
+    });
+  } else {
+    // Provider/Supabase-reported failure (e.g. cancelled consent, bad provider config).
+    // Never log the one-time code or tokens.
+    console.warn("[auth/callback] no code", {
+      error: searchParams.get("error"),
+      errorCode: searchParams.get("error_code"),
+      // Supabase may append part of the provider code after a colon; drop it.
+      errorDescription: searchParams.get("error_description")?.split(":")[0] ?? null,
+    });
   }
 
   // Covers cancelled OAuth, expired/used links, and links opened in a different
