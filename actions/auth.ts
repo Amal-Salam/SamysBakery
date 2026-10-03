@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 
 import { mapAuthError } from "@/features/auth/errors";
+import { mergeGuestCartIntoAccount } from "@/features/cart/service";
 import { ADMIN_HOME_PATH, safeRedirectPath } from "@/lib/auth/routes";
 import { publicEnv } from "@/lib/env";
 import { fail, ok, validationFailure } from "@/lib/errors";
@@ -36,10 +37,23 @@ export async function signIn(
   const next = safeRedirectPath(formData.get("next"), "/");
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) return { success: false, error: mapAuthError(error) };
 
+  await mergeGuestCartSafely(supabase, data.user.id);
   redirect(next);
+}
+
+/** Bringing the guest cart along must never block a successful sign-in. */
+async function mergeGuestCartSafely(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  userId: string
+) {
+  try {
+    await mergeGuestCartIntoAccount(supabase, userId);
+  } catch {
+    console.error("[cart] guest cart merge failed");
+  }
 }
 
 export async function signUp(

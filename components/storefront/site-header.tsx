@@ -1,19 +1,19 @@
 import Link from "next/link";
 
+import { CartDrawer } from "@/components/cart/cart-drawer";
+import { getCart } from "@/features/cart/service";
 import { getCurrentUser } from "@/lib/security/auth";
 
 // Admin navigation must never appear here (Design System §4.1).
 // "About" links to the homepage's About section (owner-supplied copy).
-// Cart count arrives with the Cart milestone.
 export async function SiteHeader() {
-  const user = await getCurrentUser();
+  const [user, cart] = await Promise.all([getCurrentUser(), getCart()]);
   const navLinks = [
     { href: "/menu", label: "Menu" },
     { href: "/#about", label: "About", desktopOnly: true },
     user
       ? { href: "/account", label: "Account" }
       : { href: "/login", label: "Sign in" },
-    { href: "/cart", label: "Cart" },
   ];
 
   return (
@@ -37,6 +37,9 @@ export async function SiteHeader() {
                 </Link>
               </li>
             ))}
+            <li>
+              <CartDrawer cart={cart} />
+            </li>
           </ul>
         </nav>
       </div>

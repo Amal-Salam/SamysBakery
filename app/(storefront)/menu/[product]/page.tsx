@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 
+import { AddToCartForm } from "@/components/cart/add-to-cart-form";
 import { AvailabilityBadge } from "@/components/storefront/availability-badge";
 import { ProductImage } from "@/components/storefront/product-image";
 import { Button } from "@/components/ui/button";
@@ -53,6 +54,8 @@ export default async function ProductPage({ params }: PageProps<"/menu/[product]
             This bake is sold out for this week.
           </p>
         ) : null}
+
+        <AddToCartForm productId={product.id} available={product.availableQuantity} soldOut={soldOut} />
 
         {product.ingredients ? (
           <details className="rounded-lg border border-border bg-surface">

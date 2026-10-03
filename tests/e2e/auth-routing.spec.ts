@@ -25,8 +25,8 @@ test.describe("route protection (signed out)", () => {
   test("cart stays public for guests", async ({ page }) => {
     const response = await page.goto("/cart");
     expect(page.url()).not.toContain("/login");
-    // /cart is built in Milestone 7; until then it is a public 404, not a redirect.
-    expect(response?.status()).toBe(404);
+    expect(response?.status()).toBe(200);
+    await expect(page.getByRole("heading", { level: 1, name: "Your Cart" })).toBeVisible();
   });
 });
 

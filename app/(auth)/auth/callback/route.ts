@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { mergeGuestCartIntoAccount } from "@/features/cart/service";
 import { safeRedirectPath } from "@/lib/auth/routes";
 import { publicEnv } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -14,8 +15,14 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const supabase = await createSupabaseServerClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      try {
+        await mergeGuestCartIntoAccount(supabase, data.user.id);
+      } catch {
+        // Bringing the guest cart along must never block a successful sign-in.
+        console.error("[cart] guest cart merge failed");
+      }
       return NextResponse.redirect(new URL(next, appUrl));
     }
     console.warn("[auth/callback] code exchange failed", {
