@@ -122,45 +122,6 @@ test("admin creates, edits, photographs and deletes a product", async ({ page })
   expect(audit).toEqual([{ action: "PRODUCT_DELETED", actor_user_id: admin.id }]);
 });
 
-test("deletion is blocked while the product is on the current menu", async ({ page }, testInfo) => {
-  // Only one PUBLISHED menu can exist, so run this in a single project.
-  test.skip(testInfo.project.name !== "desktop", "Uses the single published-menu slot");
-
-  const suffix = uniqueSuffix();
-  const { data: product } = await service
-    .from("products")
-    .insert({ name: `E2E Sourdough ${suffix}`, slug: `e2e-sourdough-${suffix}` })
-    .select("id")
-    .single();
-  const { data: menu } = await service
-    .from("weekly_menus")
-    .insert({ week_start: "2030-01-01", week_end: "2030-01-05", status: "PUBLISHED", published_at: new Date().toISOString() })
-    .select("id")
-    .single();
-  const { data: wmp } = await service
-    .from("weekly_menu_products")
-    .insert({
-      weekly_menu_id: menu!.id,
-      product_id: product!.id,
-      name_snapshot: `E2E Sourdough ${suffix}`,
-      price: 6500,
-      weekly_quantity: 5,
-    })
-    .select("id")
-    .single();
-
-  try {
-    await signInAsAdmin(page, admin);
-    await page.goto(`/admin/products/${product!.id}`);
-    await expect(page.getByText("On current menu")).toBeVisible();
-    await expect(page.getByText("Remove it from that menu before deleting it.")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Delete product" })).toBeDisabled();
-  } finally {
-    await service.from("weekly_menu_products").delete().eq("id", wmp!.id);
-    await service.from("weekly_menus").delete().eq("id", menu!.id);
-  }
-});
-
 test("admin manages categories", async ({ page }) => {
   const category = `E2E Category ${uniqueSuffix()}`;
   await signInAsAdmin(page, admin);

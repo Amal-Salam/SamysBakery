@@ -27,9 +27,10 @@ type Props = {
   fields: Record<string, string>;
   triggerVariant?: React.ComponentProps<typeof Button>["variant"];
   triggerSize?: React.ComponentProps<typeof Button>["size"];
+  confirmVariant?: React.ComponentProps<typeof Button>["variant"];
 };
 
-/** Destructive action behind an explicit, accessible confirmation step. */
+/** Consequential action behind an explicit, accessible confirmation step. */
 export function ConfirmActionDialog({
   trigger,
   title,
@@ -40,6 +41,7 @@ export function ConfirmActionDialog({
   fields,
   triggerVariant = "destructive",
   triggerSize = "default",
+  confirmVariant = "destructive",
 }: Props) {
   const [open, setOpen] = useState(false);
   const [state, formAction] = useActionState(
@@ -73,7 +75,7 @@ export function ConfirmActionDialog({
           <AlertDialogFooter>
             <AlertDialogCancel type="button">Cancel</AlertDialogCancel>
             <SubmitButton
-              variant="destructive"
+              variant={confirmVariant}
               size="default"
               fullWidth={false}
               pendingLabel={pendingLabel}

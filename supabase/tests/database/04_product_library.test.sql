@@ -17,15 +17,22 @@ insert into public.products (id, name, slug) values
   ('10000000-0000-0000-0000-000000000003', 'On draft', 'on-draft'),
   ('10000000-0000-0000-0000-000000000004', 'Used before', 'used-before');
 
+-- Dates are relative to today in Lagos so the published menu is always current.
 insert into public.weekly_menus (id, week_start, week_end, status, published_at, expired_at) values
-  ('20000000-0000-0000-0000-000000000001', '2026-10-06', '2026-10-10', 'PUBLISHED', now(), null),
-  ('20000000-0000-0000-0000-000000000002', '2026-10-13', '2026-10-17', 'DRAFT', null, null),
-  ('20000000-0000-0000-0000-000000000003', '2026-09-29', '2026-10-03', 'EXPIRED', now(), now());
+  ('20000000-0000-0000-0000-000000000001', public.menu_week_start_for(public.lagos_today()),
+   public.menu_week_start_for(public.lagos_today()) + 4, 'PUBLISHED', now(), null),
+  ('20000000-0000-0000-0000-000000000002', public.menu_week_start_for(public.lagos_today()) + 7,
+   public.menu_week_start_for(public.lagos_today()) + 11, 'DRAFT', null, null),
+  ('20000000-0000-0000-0000-000000000003', public.menu_week_start_for(public.lagos_today()) - 7,
+   public.menu_week_start_for(public.lagos_today()) - 3, 'EXPIRED', now(), now());
 
+-- Historical fixture rows: load with triggers paused (expired menus are frozen).
+set local session_replication_role = replica;
 insert into public.weekly_menu_products (weekly_menu_id, product_id, name_snapshot, price, weekly_quantity) values
   ('20000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000002', 'On published', 5000, 5),
   ('20000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000003', 'On draft', 5000, 5),
   ('20000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000004', 'Used before', 5000, 5);
+set local session_replication_role = origin;
 
 -- ---------- storage bucket ----------
 select is(
@@ -107,7 +114,8 @@ select is(
   'Used before', 'past weekly-menu snapshot is untouched');
 select results_eq(
   $$select action, entity_id, actor_user_id, (metadata ->> 'had_history')::boolean
-      from public.audit_logs where action = 'PRODUCT_DELETED' order by created_at, (metadata ->> 'had_history')$$,
+      from public.audit_logs where action = 'PRODUCT_DELETED' and entity_id::text like '10000000-%'
+     order by (metadata ->> 'had_history')$$,
   $$values
       ('PRODUCT_DELETED', '10000000-0000-0000-0000-000000000001'::uuid, '00000000-0000-0000-0000-0000000000ad'::uuid, false),
       ('PRODUCT_DELETED', '10000000-0000-0000-0000-000000000004'::uuid, '00000000-0000-0000-0000-0000000000ad'::uuid, true)$$,

@@ -804,6 +804,8 @@ export type Database = {
     }
     Functions: {
       archive_product: { Args: { target_product_id: string }; Returns: Json }
+      create_weekly_menu: { Args: never; Returns: string }
+      expire_ended_menus: { Args: never; Returns: number }
       generate_order_number: { Args: never; Returns: string }
       is_admin: { Args: never; Returns: boolean }
       is_on_published_menu: {
@@ -811,8 +813,18 @@ export type Database = {
         Returns: boolean
       }
       is_published_menu: { Args: { menu_id: string }; Returns: boolean }
+      lagos_today: { Args: never; Returns: string }
+      menu_week_start_for: { Args: { today: string }; Returns: string }
       owns_cart: { Args: { target_cart_id: string }; Returns: boolean }
       owns_order: { Args: { target_order_id: string }; Returns: boolean }
+      publish_weekly_menu: {
+        Args: { target_menu_id: string }
+        Returns: undefined
+      }
+      unpublish_weekly_menu: {
+        Args: { target_menu_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "CUSTOMER" | "ADMIN"

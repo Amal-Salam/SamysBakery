@@ -23,11 +23,17 @@ insert into public.product_images (product_id, storage_path) values
   ('10000000-0000-0000-0000-000000000001', 'products/published.jpg'),
   ('10000000-0000-0000-0000-000000000002', 'products/draft.jpg');
 
+-- Dates are relative to today in Lagos so the published menu is always current.
 insert into public.weekly_menus (id, week_start, week_end, status, published_at, expired_at) values
-  ('20000000-0000-0000-0000-000000000001', '2026-10-06', '2026-10-10', 'PUBLISHED', now(), null),
-  ('20000000-0000-0000-0000-000000000002', '2026-10-13', '2026-10-17', 'DRAFT', null, null),
-  ('20000000-0000-0000-0000-000000000003', '2026-09-29', '2026-10-03', 'EXPIRED', now(), now());
+  ('20000000-0000-0000-0000-000000000001', public.menu_week_start_for(public.lagos_today()),
+   public.menu_week_start_for(public.lagos_today()) + 4, 'PUBLISHED', now(), null),
+  ('20000000-0000-0000-0000-000000000002', public.menu_week_start_for(public.lagos_today()) + 7,
+   public.menu_week_start_for(public.lagos_today()) + 11, 'DRAFT', null, null),
+  ('20000000-0000-0000-0000-000000000003', public.menu_week_start_for(public.lagos_today()) - 7,
+   public.menu_week_start_for(public.lagos_today()) - 3, 'EXPIRED', now(), now());
 
+-- Historical fixture rows: load with triggers paused (expired menus are frozen).
+set local session_replication_role = replica;
 insert into public.weekly_menu_products
   (id, weekly_menu_id, product_id, name_snapshot, price, weekly_quantity) values
   ('30000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001',
@@ -36,6 +42,7 @@ insert into public.weekly_menu_products
    '10000000-0000-0000-0000-000000000002', 'Draft', 5000, 10),
   ('30000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000003',
    '10000000-0000-0000-0000-000000000003', 'Expired', 5000, 10);
+set local session_replication_role = origin;
 
 insert into public.addresses (id, user_id, label, recipient_name, phone, address_line, city, state) values
   ('40000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000a1', 'Home', 'A', '0800', 'A Road', 'Abuja', 'FCT'),
@@ -89,7 +96,7 @@ select results_eq('select id from public.products',
   'anon: cannot see library-only or draft-only products');
 select is((select count(*)::int from public.product_images), 1,
   'anon: sees only images of published products');
-select is((select count(*)::int from public.categories), 3, 'anon: can read categories');
+select ok((select count(*)::int from public.categories where slug in ('cakes', 'bread', 'pastries')) = 3, 'anon: can read categories');
 
 select throws_ok('select * from public.profiles', '42501', null, 'anon: profiles denied');
 select throws_ok('select * from public.addresses', '42501', null, 'anon: addresses denied');
@@ -228,17 +235,17 @@ select is(
 set local role authenticated;
 set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-0000000000ad", "role": "authenticated"}';
 
-select is((select count(*)::int from public.orders), 2, 'admin: reads all orders');
-select is((select count(*)::int from public.order_items), 2, 'admin: reads all order items');
-select is((select count(*)::int from public.payments), 2, 'admin: reads all payments');
-select is((select count(*)::int from public.addresses), 3, 'admin: reads all addresses');
-select is((select count(*)::int from public.weekly_menus), 3, 'admin: reads draft and expired menus');
-select is((select count(*)::int from public.products), 3, 'admin: reads the whole Product Library');
-select is((select count(*)::int from public.inventory_reservations), 1, 'admin: reads reservations');
-select is((select count(*)::int from public.inventory_adjustments), 1, 'admin: reads adjustments');
-select is((select count(*)::int from public.refunds), 1, 'admin: reads refunds');
-select is((select count(*)::int from public.audit_logs), 1, 'admin: reads audit logs');
-select is((select count(*)::int from public.system_settings), 1, 'admin: reads settings');
+select is((select count(*)::int from public.orders where user_id in ('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b1')), 2, 'admin: reads all customers'' orders');
+select is((select count(*)::int from public.order_items where order_id in ('60000000-0000-0000-0000-0000000000a1', '60000000-0000-0000-0000-0000000000b1')), 2, 'admin: reads all order items');
+select is((select count(*)::int from public.payments where reference in ('ref-a', 'ref-b')), 2, 'admin: reads all payments');
+select is((select count(*)::int from public.addresses where user_id in ('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000b1')), 3, 'admin: reads all addresses');
+select is((select count(*)::int from public.weekly_menus where id::text like '20000000-%'), 3, 'admin: reads draft and expired menus');
+select is((select count(*)::int from public.products where id::text like '10000000-%'), 3, 'admin: reads the whole Product Library (incl. off-menu products)');
+select is((select count(*)::int from public.inventory_reservations where order_id = '60000000-0000-0000-0000-0000000000a1'), 1, 'admin: reads reservations');
+select is((select count(*)::int from public.inventory_adjustments where created_by = '00000000-0000-0000-0000-0000000000ad'), 1, 'admin: reads adjustments');
+select is((select count(*)::int from public.refunds where order_id = '60000000-0000-0000-0000-0000000000b1'), 1, 'admin: reads refunds');
+select is((select count(*)::int from public.audit_logs where actor_user_id = '00000000-0000-0000-0000-0000000000ad'), 1, 'admin: reads audit logs');
+select is((select count(*)::int from public.system_settings where key = 'ORDER_CUTOFF_TIME'), 1, 'admin: reads settings');
 
 select lives_ok(
   $$insert into public.products (name, slug) values ('New Loaf', 'new-loaf')$$,

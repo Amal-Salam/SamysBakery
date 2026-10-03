@@ -54,3 +54,34 @@ export const TINY_PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
   "base64"
 );
+
+/**
+ * Frees the single DRAFT/PUBLISHED menu slots on the LOCAL stack by moving any
+ * active menus to unique, long-past expired weeks. Refuses to run elsewhere.
+ */
+export async function clearActiveMenus() {
+  if (!/127\.0\.0\.1|localhost/.test(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "")) {
+    throw new Error("clearActiveMenus only runs against the local Supabase stack");
+  }
+  const { data: active } = await service
+    .from("weekly_menus")
+    .select("id")
+    .in("status", ["DRAFT", "PUBLISHED"]);
+  for (const menu of active ?? []) {
+    // A random Tuesday in the 1990s keeps week_start unique.
+    const weeks = Math.floor(Math.random() * 500);
+    const start = new Date(Date.UTC(1990, 0, 2 + weeks * 7));
+    const end = new Date(start);
+    end.setUTCDate(start.getUTCDate() + 4);
+    await service
+      .from("weekly_menus")
+      .update({
+        status: "EXPIRED",
+        expired_at: new Date().toISOString(),
+        published_at: new Date().toISOString(),
+        week_start: start.toISOString().slice(0, 10),
+        week_end: end.toISOString().slice(0, 10),
+      })
+      .eq("id", menu.id);
+  }
+}
