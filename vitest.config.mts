@@ -14,7 +14,12 @@ export default defineConfig({
         resolve: { alias },
         test: {
           name: "unit",
-          include: ["tests/unit/**/*.test.ts", "features/**/*.test.ts", "lib/**/*.test.ts"],
+          include: [
+            "tests/unit/**/*.test.ts",
+            "tests/security/**/*.static.test.ts",
+            "features/**/*.test.ts",
+            "lib/**/*.test.ts",
+          ],
         },
       },
       {
@@ -23,6 +28,7 @@ export default defineConfig({
         test: {
           name: "db",
           include: ["tests/integration/**/*.test.ts", "tests/security/**/*.test.ts"],
+          exclude: ["tests/security/**/*.static.test.ts"],
           env: loadEnv("test", import.meta.dirname, ""),
           fileParallelism: false,
           testTimeout: 20_000,

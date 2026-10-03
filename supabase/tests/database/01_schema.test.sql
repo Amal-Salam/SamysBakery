@@ -1,4 +1,4 @@
--- Milestone 2 — schema structure: tables, RLS-by-default, privileges, indexes.
+-- Schema structure: tables, RLS-by-default, privileges, indexes.
 begin;
 -- Hosted CLI runs connect as cli_login_postgres; run as postgres (as locally).
 set local role postgres;
@@ -23,19 +23,27 @@ select is(
   'every public table has RLS enabled'
 );
 
--- Until Milestone 3 policies exist, anon has no table privileges at all, and
--- authenticated has none on the new tables (profiles keeps its Milestone 1 grants).
+-- anon may only ever SELECT (catalogue rows are filtered by RLS).
 select is(
   (select count(*)::int from information_schema.role_table_grants
-   where table_schema = 'public' and grantee = 'anon'),
+   where table_schema = 'public' and grantee = 'anon' and privilege_type <> 'SELECT'),
   0,
-  'anon has no privileges on public tables'
+  'anon has no write privileges on any public table'
 );
+-- Clients can never write audited/transactional tables directly.
 select is(
   (select count(*)::int from information_schema.role_table_grants
-   where table_schema = 'public' and grantee = 'authenticated' and table_name <> 'profiles'),
+   where table_schema = 'public' and grantee in ('anon', 'authenticated')
+     and privilege_type in ('INSERT', 'UPDATE', 'DELETE')
+     and table_name in ('weekly_menus', 'orders', 'order_items', 'payments', 'refunds',
+       'inventory_reservations', 'inventory_adjustments', 'audit_logs', 'system_settings'))
+  + (select count(*)::int from information_schema.column_privileges
+   where table_schema = 'public' and grantee in ('anon', 'authenticated')
+     and privilege_type in ('INSERT', 'UPDATE')
+     and table_name in ('weekly_menus', 'orders', 'order_items', 'payments', 'refunds',
+       'inventory_reservations', 'inventory_adjustments', 'audit_logs', 'system_settings')),
   0,
-  'authenticated has no privileges on non-profile tables yet'
+  'no client write privileges on audited/transactional tables'
 );
 
 -- Security-spec §33 minimum indexes (spot-check the high-risk ones).

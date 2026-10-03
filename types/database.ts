@@ -805,6 +805,13 @@ export type Database = {
     Functions: {
       generate_order_number: { Args: never; Returns: string }
       is_admin: { Args: never; Returns: boolean }
+      is_on_published_menu: {
+        Args: { target_product_id: string }
+        Returns: boolean
+      }
+      is_published_menu: { Args: { menu_id: string }; Returns: boolean }
+      owns_cart: { Args: { target_cart_id: string }; Returns: boolean }
+      owns_order: { Args: { target_order_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "CUSTOMER" | "ADMIN"
