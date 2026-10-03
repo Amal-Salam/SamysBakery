@@ -7,6 +7,11 @@ set local search_path = public, extensions;
 
 select plan(46);
 
+-- Move any real menus out of the way (rolled back with the test, so real data is untouched).
+update public.weekly_menus
+   set status = 'EXPIRED', expired_at = coalesce(expired_at, now()), published_at = coalesce(published_at, now()),
+       week_start = week_start - 7000, week_end = week_end - 7000;
+
 -- ---------- fixtures ----------
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000000a', 'a@example.com'),

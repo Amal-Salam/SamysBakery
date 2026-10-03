@@ -6,9 +6,12 @@ set local search_path = public, extensions;
 
 select plan(48);
 
+-- Move any real menus out of the way (rolled back with the test, so real data is untouched).
+update public.weekly_menus
+   set status = 'EXPIRED', expired_at = coalesce(expired_at, now()), published_at = coalesce(published_at, now()),
+       week_start = week_start - 7000, week_end = week_end - 7000;
+
 -- ---------- fixtures ----------
-update public.weekly_menus set status = 'EXPIRED', expired_at = now(), published_at = coalesce(published_at, now())
- where status in ('PUBLISHED', 'DRAFT');
 update public.system_settings set value = '"23:59"' where key = 'ORDER_CUTOFF_TIME';
 
 insert into auth.users (id, email) values

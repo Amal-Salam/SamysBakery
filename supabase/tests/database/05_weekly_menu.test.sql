@@ -6,6 +6,11 @@ set local search_path = public, extensions;
 
 select plan(43);
 
+-- Move any real menus out of the way (rolled back with the test, so real data is untouched).
+update public.weekly_menus
+   set status = 'EXPIRED', expired_at = coalesce(expired_at, now()), published_at = coalesce(published_at, now()),
+       week_start = week_start - 7000, week_end = week_end - 7000;
+
 -- ---------- week calculation (Africa/Lagos dates) ----------
 select is(menu_week_start_for('2026-10-04'), '2026-10-06'::date, 'Sunday → upcoming Tuesday');
 select is(menu_week_start_for('2026-10-05'), '2026-10-06'::date, 'Monday → upcoming Tuesday');

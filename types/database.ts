@@ -886,6 +886,10 @@ export type Database = {
       lagos_today: { Args: never; Returns: string }
       menu_week_start_for: { Args: { today: string }; Returns: string }
       order_cutoff_time: { Args: never; Returns: string }
+      order_status_rank: {
+        Args: { status: Database["public"]["Enums"]["order_status"] }
+        Returns: number
+      }
       owns_cart: { Args: { target_cart_id: string }; Returns: boolean }
       owns_order: { Args: { target_order_id: string }; Returns: boolean }
       publish_weekly_menu: {
@@ -926,6 +930,14 @@ export type Database = {
       unpublish_weekly_menu: {
         Args: { target_menu_id: string }
         Returns: undefined
+      }
+      update_order_status: {
+        Args: {
+          new_status: Database["public"]["Enums"]["order_status"]
+          reason?: string
+          target_order_number: string
+        }
+        Returns: Json
       }
     }
     Enums: {

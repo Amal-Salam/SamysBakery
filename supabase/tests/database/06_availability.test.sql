@@ -6,6 +6,11 @@ set local search_path = public, extensions;
 
 select plan(18);
 
+-- Move any real menus out of the way (rolled back with the test, so real data is untouched).
+update public.weekly_menus
+   set status = 'EXPIRED', expired_at = coalesce(expired_at, now()), published_at = coalesce(published_at, now()),
+       week_start = week_start - 7000, week_end = week_end - 7000;
+
 -- ---------- classification ----------
 select is(availability_status(0, 3), 'SOLD_OUT', '0 left → SOLD_OUT');
 select is(availability_status(2, 3), 'LOW_STOCK', 'at or below threshold → LOW_STOCK');

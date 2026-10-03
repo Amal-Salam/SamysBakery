@@ -6,6 +6,11 @@ set local search_path = public, extensions;
 
 select plan(28);
 
+-- Move any real menus out of the way (rolled back with the test, so real data is untouched).
+update public.weekly_menus
+   set status = 'EXPIRED', expired_at = coalesce(expired_at, now()), published_at = coalesce(published_at, now()),
+       week_start = week_start - 7000, week_end = week_end - 7000;
+
 -- ---------- fixtures ----------
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-0000000000a1', 'a@example.com'),
@@ -17,9 +22,6 @@ update public.profiles set role = 'ADMIN' where id = '00000000-0000-0000-0000-00
 select is(order_cutoff_time(), '17:00'::time, 'initial cutoff is 17:00 (owner decision)');
 
 -- ---------- no menu ----------
--- Clear any active menus left by other local runs (rolled back at the end).
-update public.weekly_menus set status = 'EXPIRED', expired_at = now(), published_at = coalesce(published_at, now())
- where status in ('PUBLISHED', 'DRAFT');
 select is((select count(*)::int from eligible_delivery_dates()), 0, 'no published menu → no delivery dates');
 select is(delivery_date_status(lagos_today()), 'MENU_UNAVAILABLE', 'no published menu → MENU_UNAVAILABLE');
 
