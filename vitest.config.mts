@@ -1,7 +1,8 @@
 import path from "node:path";
 
 import { defineConfig } from "vitest/config";
-import { loadEnv } from "vite";
+
+import { getLocalSupabaseEnv } from "./scripts/local-supabase-env.mjs";
 
 const alias = { "@": path.resolve(import.meta.dirname) };
 
@@ -23,13 +24,14 @@ export default defineConfig({
         },
       },
       {
-        // Runs against the linked Supabase project using .env.local.
+        // Runs against the local Supabase stack (`npx supabase start`), never the
+        // hosted project, so test rows cannot accumulate there.
         resolve: { alias },
         test: {
           name: "db",
           include: ["tests/integration/**/*.test.ts", "tests/security/**/*.test.ts"],
           exclude: ["tests/security/**/*.static.test.ts"],
-          env: loadEnv("test", import.meta.dirname, ""),
+          env: process.argv.some((arg) => arg.includes("db")) ? getLocalSupabaseEnv() : {},
           fileParallelism: false,
           testTimeout: 20_000,
         },

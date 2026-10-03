@@ -3,10 +3,8 @@ import { randomUUID } from "node:crypto";
 import { expect, test, type Page } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
 
-// Signed-in journeys against the linked Supabase project. Creates pre-confirmed
-// throwaway users (@example.com — no email is sent) and deletes them afterwards.
-
-process.loadEnvFile(".env.local");
+// Signed-in journeys against the local Supabase stack (see playwright.config.ts).
+// Creates pre-confirmed throwaway users (@example.com — no email is sent).
 
 const service = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
