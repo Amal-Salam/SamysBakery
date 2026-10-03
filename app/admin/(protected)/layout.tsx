@@ -1,4 +1,7 @@
+import { Suspense } from "react";
+
 import { signOut } from "@/actions/auth";
+import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/ui/states";
 import { checkAdminPage } from "@/lib/security/auth";
@@ -45,9 +48,14 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
           </div>
         </div>
       </header>
-      <main id="main-content" className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6">
-        {children}
-      </main>
+      <div className="flex flex-1 flex-col lg:flex-row">
+        <Suspense>
+          <AdminSidebar />
+        </Suspense>
+        <main id="main-content" className="w-full min-w-0 flex-1 px-4 py-8 sm:px-6">
+          <div className="mx-auto max-w-6xl">{children}</div>
+        </main>
+      </div>
     </div>
   );
 }

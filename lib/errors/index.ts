@@ -39,6 +39,39 @@ export function validationFailure(error: z.ZodError): ActionResult<never> {
   return fail("VALIDATION_ERROR", "Please check the highlighted fields.", fieldErrors);
 }
 
+type DbErrorLike = { code?: string | null; message?: string | null } | null | undefined;
+
+/**
+ * Maps a PostgREST/Postgres error to an AppError with a safe message.
+ * `messages` overrides the user-facing text per SQLSTATE or raised message key.
+ */
+export function fromDbError(
+  error: DbErrorLike,
+  messages: Partial<Record<string, string>> = {}
+): AppError {
+  const key = error?.message && messages[error.message] ? error.message : (error?.code ?? "");
+  const message = messages[key];
+  switch (error?.code) {
+    case "42501":
+      return new AppError("FORBIDDEN", message ?? "You do not have permission to do that.");
+    case "23505":
+      return new AppError("CONFLICT", message ?? "That conflicts with an existing record.");
+    case "23503":
+      return new AppError("CONFLICT", message ?? "That record is still in use.");
+    case "23514":
+    case "22001":
+      return new AppError("VALIDATION_ERROR", message ?? "Some of the details are not valid.");
+    case "P0002":
+    case "PGRST116":
+      return new AppError("NOT_FOUND", message ?? "That record could not be found.");
+    case "P0001":
+      return new AppError("CONFLICT", message ?? "That action is not allowed right now.");
+    default:
+      console.error("[db]", error?.code ?? "unknown");
+      return new AppError("INTERNAL_ERROR", GENERIC_MESSAGE);
+  }
+}
+
 /**
  * Converts any thrown value into a safe result. Unexpected errors are logged
  * server-side and never expose internals (SQL, stack traces, provider data).

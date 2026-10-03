@@ -4,7 +4,7 @@ import { useActionState } from "react";
 
 import { signUp } from "@/actions/auth";
 
-import { FormError, FormField, SubmitButton, fieldErrorsOf } from "./form-parts";
+import { FormError, FormField, SubmitButton, fieldErrorsOf } from "@/components/ui/form";
 
 export function SignUpForm({ next }: { next: string }) {
   const [state, action] = useActionState(signUp, null);

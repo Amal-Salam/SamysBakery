@@ -1,6 +1,6 @@
 import { signInWithGoogle } from "@/actions/auth";
 
-import { SubmitButton } from "./form-parts";
+import { SubmitButton } from "@/components/ui/form";
 
 export function GoogleSignInButton({ next }: { next: string }) {
   return (

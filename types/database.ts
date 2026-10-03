@@ -803,6 +803,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      archive_product: { Args: { target_product_id: string }; Returns: Json }
       generate_order_number: { Args: never; Returns: string }
       is_admin: { Args: never; Returns: boolean }
       is_on_published_menu: {

@@ -6,7 +6,7 @@ import { useActionState } from "react";
 import { updatePassword } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 
-import { FormError, FormField, SubmitButton, fieldErrorsOf } from "./form-parts";
+import { FormError, FormField, SubmitButton, fieldErrorsOf } from "@/components/ui/form";
 
 export function UpdatePasswordForm() {
   const [state, action] = useActionState(updatePassword, null);
