@@ -12,9 +12,15 @@ import { formatWeekRange } from "@/lib/utils/dates";
 // Copy supplied by the owner (2026-10-03).
 const HOMEPAGE_PREVIEW_COUNT = 4;
 
-export default function HomePage() {
+export default async function HomePage({ searchParams }: PageProps<"/">) {
+  const { account } = await searchParams;
   return (
     <>
+      {account === "deleted" ? (
+        <p role="status" className="mx-auto mt-6 w-full max-w-6xl rounded-md bg-success/10 px-4 py-3 text-body-sm text-success">
+          Your account has been deleted.
+        </p>
+      ) : null}
       {/* Hero */}
       <section className="mx-auto grid w-full max-w-6xl items-center gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 md:py-20">
         <div className="flex flex-col items-start gap-6">

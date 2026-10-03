@@ -61,10 +61,10 @@ export async function startPayment(input: {
 }
 
 export type PaymentOutcome =
-  | { kind: "CONFIRMED"; orderNumber: string; userId: string }
+  | { kind: "CONFIRMED"; orderNumber: string; userId: string | null }
   | { kind: "PENDING" }
   | { kind: "FAILED" }
-  | { kind: "REFUNDED_LATE"; userId: string }
+  | { kind: "REFUNDED_LATE"; userId: string | null }
   | { kind: "REJECTED"; reason: "AMOUNT_MISMATCH" | "CURRENCY_MISMATCH" | "REFERENCE_MISMATCH" }
   | { kind: "UNKNOWN_REFERENCE" }
   | { kind: "VERIFICATION_UNAVAILABLE" };

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { deliveryDateStatus, eligibleDeliveryDates } from "@/features/checkout/rules";
-import { formatClockTime, formatDeliveryDate, lagosTimeNow } from "@/lib/utils/dates";
+import { formatClockTime, formatDeliveryDate, formatLongDate, lagosTimeNow } from "@/lib/utils/dates";
 import { addressInputSchema } from "@/schemas/address";
 import { prepareCheckoutSchema } from "@/schemas/checkout";
 
@@ -116,5 +116,11 @@ describe("prepareCheckoutSchema", () => {
   });
   it("rejects malformed dates", () => {
     expect(prepareCheckoutSchema.safeParse({ deliveryDate: "Friday", addressId: address, specialNotes: "" }).success).toBe(false);
+  });
+});
+
+describe("formatLongDate", () => {
+  it("has no locale comma", () => {
+    expect(formatLongDate("2030-01-03")).toBe("Thursday 3 January 2030");
   });
 });

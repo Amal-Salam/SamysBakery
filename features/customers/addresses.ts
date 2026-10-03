@@ -117,3 +117,22 @@ export function assertAddressOwned(address: Address | null): Address {
   if (!address) throw new AppError("NOT_FOUND", "That address could not be found.");
   return address;
 }
+
+export async function updateAddress(id: string, input: AddressInput): Promise<void> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("addresses")
+    .update({
+      label: input.label,
+      recipient_name: input.recipientName,
+      phone: input.phone,
+      address_line: input.addressLine,
+      city: input.city,
+      state: input.state,
+      additional_info: input.additionalInfo,
+    })
+    .eq("id", id)
+    .select("id");
+  if (error) throw fromDbError(error);
+  if (data.length === 0) throw new AppError("NOT_FOUND", "That address could not be found.");
+}

@@ -66,15 +66,19 @@ export function formatDeliveryDate(isoDate: string, today: string): string {
   return label;
 }
 
-/** "Tuesday 6 October 2026" for summaries. */
+const longParts = new Intl.DateTimeFormat("en-GB", {
+  timeZone: "UTC",
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
+
+/** "Tuesday 6 October 2026" for summaries (no locale comma). */
 export function formatLongDate(isoDate: string): string {
-  return new Intl.DateTimeFormat("en-GB", {
-    timeZone: "UTC",
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(toUtcDate(isoDate));
+  const parts = longParts.formatToParts(toUtcDate(isoDate));
+  const get = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+  return `${get("weekday")} ${get("day")} ${get("month")} ${get("year")}`;
 }
 
 /** "17:00" → "5:00 PM" */

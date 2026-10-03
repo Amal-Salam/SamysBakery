@@ -386,7 +386,7 @@ export type Database = {
           special_notes: string | null
           subtotal: number
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           cancelled_at?: string | null
@@ -410,7 +410,7 @@ export type Database = {
           special_notes?: string | null
           subtotal: number
           updated_at?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           cancelled_at?: string | null
@@ -434,7 +434,7 @@ export type Database = {
           special_notes?: string | null
           subtotal?: number
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -460,7 +460,7 @@ export type Database = {
           reference: string
           status: Database["public"]["Enums"]["payment_status"]
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           amount: number
@@ -475,7 +475,7 @@ export type Database = {
           reference: string
           status?: Database["public"]["Enums"]["payment_status"]
           updated_at?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           amount?: number
@@ -490,7 +490,7 @@ export type Database = {
           reference?: string
           status?: Database["public"]["Enums"]["payment_status"]
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -874,6 +874,7 @@ export type Database = {
         Args: { target_address_id: string }
         Returns: undefined
       }
+      delete_my_account: { Args: never; Returns: Json }
       delivery_date_status: { Args: { requested: string }; Returns: string }
       eligible_delivery_dates: { Args: never; Returns: string[] }
       expire_ended_menus: { Args: never; Returns: number }
