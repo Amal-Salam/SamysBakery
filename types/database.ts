@@ -900,6 +900,10 @@ export type Database = {
           weekly_menu_product_id: string
         }[]
       }
+      get_revenue_metrics: {
+        Args: { from_date?: string; to_date?: string }
+        Returns: Json
+      }
       is_admin: { Args: never; Returns: boolean }
       is_on_published_menu: {
         Args: { target_product_id: string }

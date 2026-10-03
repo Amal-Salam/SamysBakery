@@ -1,35 +1,64 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { OrderStatusBadge, PaymentStatusBadge } from "@/components/admin/orders/order-status-badge";
+import { OrdersTable } from "@/components/admin/orders/orders-table";
+import { TodayByStatus } from "@/components/admin/orders/today-by-status";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/states";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { listAdminOrders } from "@/features/orders/admin";
+import { listAdminOrders, ORDER_VIEWS, type OrderView } from "@/features/orders/admin";
 import { ORDER_FLOW, ORDER_STATUS_LABELS, type OrderStatus } from "@/features/orders/rules";
-import { formatNaira } from "@/features/weekly-menu/rules";
-import { formatWeekRange } from "@/lib/utils/dates";
-import { cn } from "@/lib/utils";
+import { formatLongDate, lagosToday } from "@/lib/utils/dates";
 
 export const metadata: Metadata = { title: "Orders" };
 
 const STATUSES: OrderStatus[] = [...ORDER_FLOW, "CANCELLED"];
 
-function deliveryLabel(date: string) {
-  return formatWeekRange(date, date).split(" – ")[1];
-}
+const VIEW_TITLES: Record<OrderView, string> = {
+  today: "Today's Orders",
+  upcoming: "Upcoming Orders",
+  preparing: "Orders to Prepare",
+  ready: "Ready for Delivery",
+};
+
+const VIEW_DESCRIPTIONS: Record<OrderView, string> = {
+  today: "Orders for delivery today",
+  upcoming: "Orders for delivery after today, not yet delivered or cancelled.",
+  preparing: "Paid, received or baking orders, earliest delivery first.",
+  ready: "Orders ready to hand to the delivery partner, earliest delivery first.",
+};
+
+const VIEW_EMPTY: Record<OrderView, string> = {
+  today: "No orders for delivery today.",
+  upcoming: "No upcoming orders.",
+  preparing: "No orders to prepare.",
+  ready: "No orders are ready for delivery.",
+};
 
 export default async function AdminOrdersPage({ searchParams }: PageProps<"/admin/orders">) {
-  const { status } = await searchParams;
-  const filter = STATUSES.includes(status as OrderStatus) ? (status as OrderStatus) : undefined;
-  const orders = await listAdminOrders({ status: filter });
+  const { status, view: viewParam } = await searchParams;
+  const view = ORDER_VIEWS.includes(viewParam as OrderView) ? (viewParam as OrderView) : undefined;
+  const filter = !view && STATUSES.includes(status as OrderStatus) ? (status as OrderStatus) : undefined;
+  const orders = await listAdminOrders({ status: filter, view });
+
+  if (view) {
+    const description =
+      view === "today" ? `${VIEW_DESCRIPTIONS.today}, ${formatLongDate(lagosToday())}.` : VIEW_DESCRIPTIONS[view];
+    return (
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-heading-1 text-primary">{VIEW_TITLES[view]}</h1>
+          <p className="text-body-sm text-muted-foreground">{description}</p>
+        </div>
+        {orders.length === 0 ? (
+          <EmptyState title={VIEW_EMPTY[view]} />
+        ) : view === "today" ? (
+          <TodayByStatus orders={orders} />
+        ) : (
+          <OrdersTable orders={orders} caption={VIEW_TITLES[view]} />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -51,43 +80,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
       {orders.length === 0 ? (
         <EmptyState title={filter ? `No ${ORDER_STATUS_LABELS[filter].toLowerCase()} orders.` : "No orders yet."} />
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border bg-surface">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Order</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Delivery</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-                <TableHead>Payment</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {orders.map((order) => (
-                <TableRow key={order.orderNumber} className={cn(order.orderStatus === "CANCELLED" && "opacity-70")}>
-                  <TableCell>
-                    <Link
-                      href={`/admin/orders/${order.orderNumber}`}
-                      className="font-medium text-accent underline underline-offset-4"
-                    >
-                      {order.orderNumber}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{order.customerName}</TableCell>
-                  <TableCell>{deliveryLabel(order.deliveryDate)}</TableCell>
-                  <TableCell className="text-right">{formatNaira(order.subtotal)}</TableCell>
-                  <TableCell>
-                    <PaymentStatusBadge status={order.paymentStatus} />
-                  </TableCell>
-                  <TableCell>
-                    <OrderStatusBadge status={order.orderStatus} />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <OrdersTable orders={orders} />
       )}
     </div>
   );

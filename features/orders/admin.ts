@@ -1,7 +1,9 @@
 import "server-only";
 
+import { CLOSED_STATUSES, PREPARATION_STATUSES } from "@/features/admin/rules";
 import { AppError, fromDbError } from "@/lib/errors";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { lagosToday } from "@/lib/utils/dates";
 
 import type { OrderStatus, PaymentStatus } from "./rules";
 
@@ -18,15 +20,30 @@ export type AdminOrderSummary = {
   createdAt: string;
 };
 
-export async function listAdminOrders(filters: { status?: OrderStatus } = {}): Promise<AdminOrderSummary[]> {
+/** Operational order views: by delivery date (owner decision) or by status. */
+export const ORDER_VIEWS = ["today", "upcoming", "preparing", "ready"] as const;
+export type OrderView = (typeof ORDER_VIEWS)[number];
+
+export async function listAdminOrders(
+  filters: { status?: OrderStatus; view?: OrderView; limit?: number } = {}
+): Promise<AdminOrderSummary[]> {
   const supabase = await createSupabaseServerClient();
+  const today = lagosToday();
   let query = supabase
     .from("orders")
-    .select("order_number, recipient_name, delivery_date, subtotal, payment_status, order_status, created_at")
-    .order("created_at", { ascending: false })
-    .limit(200);
+    .select("order_number, recipient_name, delivery_date, subtotal, payment_status, order_status, created_at");
   if (filters.status) query = query.eq("order_status", filters.status);
-  const { data, error } = await query;
+  if (filters.view === "today") query = query.eq("delivery_date", today);
+  if (filters.view === "upcoming") {
+    query = query.gt("delivery_date", today).not("order_status", "in", `(${CLOSED_STATUSES.join(",")})`);
+  }
+  if (filters.view === "preparing") query = query.in("order_status", [...PREPARATION_STATUSES]);
+  if (filters.view === "ready") query = query.eq("order_status", "READY");
+  query =
+    filters.view && filters.view !== "today"
+      ? query.order("delivery_date", { ascending: true }).order("created_at", { ascending: true })
+      : query.order("created_at", { ascending: false });
+  const { data, error } = await query.limit(filters.limit ?? 200);
   if (error) throw fromDbError(error);
   return data.map((row) => ({
     orderNumber: row.order_number,

@@ -119,7 +119,7 @@ test("admin signs in to the admin area and signs out", async ({ page }) => {
 
   await signIn(page, admin);
   await expect(page).toHaveURL("/admin");
-  await expect(page.getByRole("heading", { level: 1, name: "Admin" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Dashboard" })).toBeVisible();
 
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page).toHaveURL("/");
