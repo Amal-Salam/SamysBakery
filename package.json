@@ -14,7 +14,9 @@
     "admin:promote": "node --env-file=.env.local scripts/promote-admin.mts",
     "db:push": "supabase db push",
     "db:types": "supabase gen types typescript --linked --schema public > types/database.ts",
-    "test:db": "vitest run --project db"
+    "test:db": "vitest run --project db",
+    "test:schema": "supabase test db --local",
+    "test:schema:linked": "supabase test db --linked"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
