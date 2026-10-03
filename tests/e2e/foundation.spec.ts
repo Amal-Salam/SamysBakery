@@ -11,7 +11,7 @@ test.describe("application foundation", () => {
 
     await expect(page).toHaveTitle("Samy's Bakery");
     await expect(
-      page.getByRole("heading", { level: 1, name: "Samy's Bakery" })
+      page.getByRole("heading", { level: 1, name: "Something delicious is always baking." })
     ).toBeVisible();
 
     const mainNav = page.getByRole("navigation", { name: "Main" });

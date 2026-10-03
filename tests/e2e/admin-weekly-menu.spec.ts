@@ -12,8 +12,8 @@ import {
 } from "./helpers";
 
 // Admin journey (AGENTS.md §48): Create Weekly Menu → Add Product → Set Price →
-// Set Quantity → Publish. Only one DRAFT and one PUBLISHED menu can exist, so
-// this file runs serially and only in the desktop project.
+// Set Quantity → Publish. Runs serially in its own "admin-menu" project because
+// only one DRAFT and one PUBLISHED menu can exist (see playwright.config.ts).
 
 test.describe.configure({ mode: "serial" });
 
@@ -23,8 +23,7 @@ const sourdough = `E2E Sourdough ${suffix}`;
 const brioche = `E2E Brioche ${suffix}`;
 let sourdoughId: string;
 
-test.beforeAll(async ({}, testInfo) => {
-  if (testInfo.project.name !== "desktop") return;
+test.beforeAll(async () => {
   await clearActiveMenus();
   admin = await createAccount("E2E Menu Admin", "ADMIN");
 
@@ -42,13 +41,8 @@ test.beforeAll(async ({}, testInfo) => {
   await service.from("product_images").insert({ product_id: sourdoughId, storage_path: path, alt_text: `${sourdough} loaf` });
 });
 
-test.afterAll(async ({}, testInfo) => {
-  if (testInfo.project.name !== "desktop") return;
+test.afterAll(async () => {
   await clearActiveMenus();
-});
-
-test.beforeEach(async ({}, testInfo) => {
-  test.skip(testInfo.project.name !== "desktop", "Uses the single draft/published menu slots");
 });
 
 async function addToMenu(page: Page, name: string, price: string, quantity: string, threshold: string) {

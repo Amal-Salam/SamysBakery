@@ -804,9 +804,25 @@ export type Database = {
     }
     Functions: {
       archive_product: { Args: { target_product_id: string }; Returns: Json }
+      availability_status: {
+        Args: { available: number; low_stock_threshold: number }
+        Returns: string
+      }
+      available_quantity: {
+        Args: { target_weekly_menu_product_id: string }
+        Returns: number
+      }
       create_weekly_menu: { Args: never; Returns: string }
       expire_ended_menus: { Args: never; Returns: number }
       generate_order_number: { Args: never; Returns: string }
+      get_published_menu_availability: {
+        Args: never
+        Returns: {
+          availability_status: string
+          available_quantity: number
+          weekly_menu_product_id: string
+        }[]
+      }
       is_admin: { Args: never; Returns: boolean }
       is_on_published_menu: {
         Args: { target_product_id: string }

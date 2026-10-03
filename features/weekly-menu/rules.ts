@@ -3,6 +3,8 @@
 
 import { addDays, isoWeekday } from "@/lib/utils/dates";
 
+import type { StorefrontProduct } from "./storefront";
+
 export type MenuStatus = "DRAFT" | "PUBLISHED" | "EXPIRED";
 
 /**
@@ -51,4 +53,22 @@ const naira = new Intl.NumberFormat("en-NG", {
 /** 6500 → "₦6,500" */
 export function formatNaira(amount: number): string {
   return naira.format(amount);
+}
+
+export type CategoryGroup = { name: string | null; products: StorefrontProduct[] };
+
+/** Groups by category order; uncategorized products come last. One group if no categories. */
+export function groupByCategory(products: StorefrontProduct[]): CategoryGroup[] {
+  const groups = new Map<string, { order: number; group: CategoryGroup }>();
+  for (const product of products) {
+    const key = product.category?.name ?? "";
+    if (!groups.has(key)) {
+      groups.set(key, {
+        order: product.category?.displayOrder ?? Number.MAX_SAFE_INTEGER,
+        group: { name: product.category?.name ?? null, products: [] },
+      });
+    }
+    groups.get(key)!.group.products.push(product);
+  }
+  return [...groups.values()].sort((a, b) => a.order - b.order).map((entry) => entry.group);
 }
