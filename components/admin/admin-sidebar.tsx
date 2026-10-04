@@ -35,6 +35,7 @@ const NAV_GROUPS = [
     items: [
       { href: "/admin/revenue", label: "Revenue" },
       { href: "/admin/inventory", label: "Inventory" },
+      { href: "/admin/audit", label: "Audit log" }, // owner-approved addition (Milestone 17)
     ],
   },
 ] as const;

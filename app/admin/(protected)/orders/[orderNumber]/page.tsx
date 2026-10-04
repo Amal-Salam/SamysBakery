@@ -2,29 +2,28 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { ActivityList } from "@/components/admin/audit/activity-list";
 import { CancelAndRefund } from "@/components/admin/orders/cancel-and-refund";
 import { OrderStatusBadge, PaymentStatusBadge } from "@/components/admin/orders/order-status-badge";
 import { OrderStatusControl } from "@/components/admin/orders/order-status-control";
+import { getEntityActivity } from "@/features/admin/audit";
 import { getAdminOrder } from "@/features/orders/admin";
-import { ORDER_STATUS_LABELS, type OrderStatus } from "@/features/orders/rules";
+import { ORDER_STATUS_LABELS } from "@/features/orders/rules";
 import { formatNaira } from "@/features/weekly-menu/rules";
 import { formatLongDate } from "@/lib/utils/dates";
 
 export const metadata: Metadata = { title: "Order" };
 
-const timeFormat = new Intl.DateTimeFormat("en-GB", {
-  timeZone: "Africa/Lagos",
-  day: "numeric",
-  month: "short",
-  hour: "2-digit",
-  minute: "2-digit",
-});
 
 export default async function AdminOrderPage({ params }: PageProps<"/admin/orders/[orderNumber]">) {
   const { orderNumber } = await params;
   if (!/^SAM-\d{4,}$/.test(orderNumber)) notFound();
   const order = await getAdminOrder(orderNumber);
   if (!order) notFound();
+  const activity = await getEntityActivity([
+    { type: "order", ids: [order.id] },
+    { type: "refund", ids: order.refund ? [order.refund.id] : [] },
+  ]);
 
   return (
     <div className="flex flex-col gap-8">
@@ -125,25 +124,11 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/order
         </section>
       </div>
 
-      <section aria-labelledby="history-heading" className="flex flex-col gap-2">
-        <h2 id="history-heading" className="text-heading-3 text-primary">
-          Status history
+      <section aria-labelledby="activity-heading" className="flex flex-col gap-2">
+        <h2 id="activity-heading" className="text-heading-3 text-primary">
+          Activity
         </h2>
-        {order.history.length === 0 ? (
-          <p className="text-body-sm text-muted-foreground">No status changes yet.</p>
-        ) : (
-          <ol className="flex flex-col gap-2 text-body-sm">
-            {order.history.map((entry, index) => (
-              <li key={index} className="rounded-md border border-border bg-surface px-3 py-2">
-                <span className="text-muted-foreground">{timeFormat.format(new Date(entry.at))}: </span>
-                {ORDER_STATUS_LABELS[entry.from as OrderStatus] ?? entry.from} →{" "}
-                <strong>{ORDER_STATUS_LABELS[entry.to as OrderStatus] ?? entry.to}</strong>
-                {entry.direction === "CORRECTION" ? <span className="text-warning"> (correction)</span> : null}
-                {entry.reason ? <span className="block text-muted-foreground">Reason: {entry.reason}</span> : null}
-              </li>
-            ))}
-          </ol>
-        )}
+        <ActivityList entries={activity} empty="No activity recorded yet." />
       </section>
     </div>
   );

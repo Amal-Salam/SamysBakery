@@ -134,7 +134,8 @@ test("a failed refund can be retried", async ({ page, request }) => {
   await paystackRefund(request, order.reference, "failed", true);
   await expect.poll(async () => (await refundState(order.orderId))?.provider_status, { timeout: 15_000 }).toBe("failed");
   await page.reload();
-  await expect(page.getByText(/Refund failed at Paystack/)).toBeVisible();
+  await expect(page.getByText(/Refund failed at Paystack — you can try again/)).toBeVisible();
+  await expect(page.getByRole("region", { name: "Activity" }).getByText("Refund failed at Paystack", { exact: true })).toBeVisible();
 
   await requestRefund(page);
   expect(await refundState(order.orderId)).toMatchObject({ status: "NOT_REFUNDED", provider_status: "pending" });

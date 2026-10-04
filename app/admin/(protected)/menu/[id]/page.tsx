@@ -4,8 +4,9 @@ import { notFound, redirect } from "next/navigation";
 
 import { MenuProductEditor } from "@/components/admin/menu/menu-product-editor";
 import { MenuStatusBadge } from "@/components/admin/menu/menu-status-badge";
+import { ActivityList } from "@/components/admin/audit/activity-list";
 import { EmptyState } from "@/components/ui/states";
-import { getAdminMenu } from "@/features/weekly-menu/queries";
+import { getAdminMenu, getMenuActivity } from "@/features/weekly-menu/queries";
 import { formatWeekRange } from "@/lib/utils/dates";
 import { uuidSchema } from "@/schemas/product";
 
@@ -19,6 +20,7 @@ export default async function MenuHistoryPage({ params }: PageProps<"/admin/menu
   const menu = await getAdminMenu(id);
   if (!menu) notFound();
   if (menu.status !== "EXPIRED") redirect("/admin/menu");
+  const activity = await getMenuActivity(menu);
 
   return (
     <div className="flex flex-col gap-6">
@@ -41,6 +43,12 @@ export default async function MenuHistoryPage({ params }: PageProps<"/admin/menu
           ))}
         </ul>
       )}
+      <section aria-labelledby="menu-activity-heading" className="flex flex-col gap-3">
+        <h2 id="menu-activity-heading" className="text-heading-2 text-primary">
+          Menu activity
+        </h2>
+        <ActivityList entries={activity} empty="No activity recorded for this menu." />
+      </section>
     </div>
   );
 }

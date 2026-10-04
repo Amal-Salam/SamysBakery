@@ -95,6 +95,16 @@ test("admin creates, edits, photographs and deletes a product", async ({ page })
   expect(remaining ?? []).toHaveLength(0);
   expect(storagePath).toBeTruthy();
 
+  // Every change is in the product's history (audit), newest first.
+  await page.reload();
+  const history = page.getByRole("region", { name: "History" });
+  await expect(history.getByRole("listitem")).toHaveText([
+    new RegExp(`Photo removed from ${name}`),
+    new RegExp(`Photo added to ${name}`),
+    new RegExp(`Product edited: ${name}.*Changed description`),
+    new RegExp(`Product created: ${name}`),
+  ]);
+
   // Library list shows the product.
   await page.getByRole("link", { name: "← Product Library" }).click();
   await expect(page.getByRole("row", { name: new RegExp(name) })).toBeVisible();
@@ -118,7 +128,8 @@ test("admin creates, edits, photographs and deletes a product", async ({ page })
   const { data: audit } = await service
     .from("audit_logs")
     .select("action, actor_user_id")
-    .eq("entity_id", productId);
+    .eq("entity_id", productId)
+    .eq("action", "PRODUCT_DELETED");
   expect(audit).toEqual([{ action: "PRODUCT_DELETED", actor_user_id: admin.id }]);
 });
 

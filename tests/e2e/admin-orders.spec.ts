@@ -84,7 +84,7 @@ test("admin views an order and moves it through the lifecycle", async ({ page })
   await expect(page.getByText("Current status: Baking/Preparing")).toBeVisible();
 
   // History and audit.
-  const history = page.getByRole("region", { name: "Status history" });
+  const history = page.getByRole("region", { name: "Activity" });
   await expect(history.getByText("(correction)")).toBeVisible();
   await expect(history.getByText("Reason: Marked ready too early")).toBeVisible();
   const { data: audit } = await service

@@ -1,5 +1,6 @@
 import "server-only";
 
+import { getEntityActivity, type AuditEntry } from "@/features/admin/audit";
 import { fromDbError } from "@/lib/errors";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { lagosToday } from "@/lib/utils/dates";
@@ -176,4 +177,12 @@ export async function listAddableProducts(menuId: string): Promise<AddableProduc
       name: product.name,
       categoryName: (product.categories as unknown as { name: string } | null)?.name ?? null,
     }));
+}
+
+/** Audit activity for a menu: lifecycle, product changes and stock additions. */
+export async function getMenuActivity(menu: Pick<AdminMenu, "id" | "products">): Promise<AuditEntry[]> {
+  return getEntityActivity([
+    { type: "weekly_menu", ids: [menu.id] },
+    { type: "weekly_menu_product", ids: menu.products.map((product) => product.id) },
+  ]);
 }

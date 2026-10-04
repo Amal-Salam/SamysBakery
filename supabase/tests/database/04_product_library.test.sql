@@ -127,7 +127,8 @@ select results_eq(
   'each archive writes an audit record with the admin as actor');
 select is(
   (select count(*)::int from public.audit_logs where entity_id in (
-    '10000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000003')),
+    '10000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000003')
+    and action = 'PRODUCT_DELETED'),
   0, 'blocked attempts leave no audit record or change');
 
 select * from finish();

@@ -69,8 +69,8 @@ export type AdminOrderDetail = AdminOrderSummary & {
   specialNotes: string | null;
   paidAt: string;
   items: { id: string; name: string; quantity: number; unitPrice: number; lineTotal: number }[];
-  history: { at: string; from: string; to: string; direction: string; reason: string | null }[];
   refund: {
+    id: string;
     status: "NOT_REFUNDED" | "REFUNDED";
     providerStatus: string | null;
     amount: number;
@@ -87,20 +87,12 @@ export async function getAdminOrder(orderNumber: string): Promise<AdminOrderDeta
       `id, user_id, order_number, recipient_name, email, phone, delivery_address, delivery_city, delivery_state,
        delivery_additional_info, special_notes, delivery_date, subtotal, payment_status, order_status,
        created_at, paid_at, order_items ( id, product_name, quantity, unit_price, line_total ),
-       refunds ( status, provider_status, amount, requested_at, processed_at )`
+       refunds ( id, status, provider_status, amount, requested_at, processed_at )`
     )
     .eq("order_number", orderNumber)
     .maybeSingle();
   if (error) throw fromDbError(error);
   if (!order) return null;
-
-  const { data: audit } = await supabase
-    .from("audit_logs")
-    .select("created_at, metadata")
-    .eq("entity_type", "order")
-    .eq("entity_id", order.id)
-    .in("action", ["ORDER_STATUS_CHANGED", "ORDER_CANCELLED"])
-    .order("created_at", { ascending: false });
 
   return {
     id: order.id,
@@ -127,6 +119,7 @@ export async function getAdminOrder(orderNumber: string): Promise<AdminOrderDeta
     })),
     refund: order.refunds[0]
       ? {
+          id: order.refunds[0].id,
           status: order.refunds[0].status,
           providerStatus: order.refunds[0].provider_status,
           amount: Number(order.refunds[0].amount),
@@ -134,16 +127,6 @@ export async function getAdminOrder(orderNumber: string): Promise<AdminOrderDeta
           processedAt: order.refunds[0].processed_at,
         }
       : null,
-    history: (audit ?? []).map((entry) => {
-      const meta = entry.metadata as Record<string, string | undefined>;
-      return {
-        at: entry.created_at,
-        from: meta.from ?? "",
-        to: meta.to ?? "CANCELLED",
-        direction: meta.direction ?? "",
-        reason: meta.reason ?? null,
-      };
-    }),
   };
 }
 

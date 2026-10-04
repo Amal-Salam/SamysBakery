@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { publishMenuAction, unpublishMenuAction } from "@/actions/admin/menu";
+import { ActivityList } from "@/components/admin/audit/activity-list";
 import { ConfirmActionDialog } from "@/components/admin/confirm-action-dialog";
 import { AddMenuProductForm } from "@/components/admin/menu/add-menu-product-form";
 import { MenuProductEditor } from "@/components/admin/menu/menu-product-editor";
@@ -12,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/states";
 import {
   getCurrentAdminMenu,
+  getMenuActivity,
   listAddableProducts,
   listMenuHistory,
 } from "@/features/weekly-menu/queries";
@@ -28,7 +30,9 @@ export default async function CurrentMenuPage({ searchParams }: PageProps<"/admi
     getOrderCutoff(),
   ]);
   const holdMinutes = await getReservationTimeout();
-  const addable = menu ? await listAddableProducts(menu.id) : [];
+  const [addable, activity] = menu
+    ? await Promise.all([listAddableProducts(menu.id), getMenuActivity(menu)])
+    : [[], []];
 
   return (
     <div className="flex flex-col gap-10">
@@ -124,6 +128,15 @@ export default async function CurrentMenuPage({ searchParams }: PageProps<"/admi
           </section>
         </>
       )}
+
+      {menu ? (
+        <section aria-labelledby="menu-activity-heading" className="flex flex-col gap-3">
+          <h2 id="menu-activity-heading" className="text-heading-2 text-primary">
+            Menu activity
+          </h2>
+          <ActivityList entries={activity} empty="No activity recorded for this menu yet." />
+        </section>
+      ) : null}
 
       <section aria-labelledby="cutoff-heading" className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-4">
         <h2 id="cutoff-heading" className="text-heading-3 text-primary">

@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { ActivityList } from "@/components/admin/audit/activity-list";
 import { ArchiveProduct } from "@/components/admin/products/archive-product";
 import { LibraryStatusBadge } from "@/components/admin/products/library-status-badge";
 import { ProductForm } from "@/components/admin/products/product-form";
 import { ProductImages } from "@/components/admin/products/product-images";
+import { getEntityActivity } from "@/features/admin/audit";
 import { getLibraryProduct, listCategories } from "@/features/products/queries";
 import { uuidSchema } from "@/schemas/product";
 
@@ -20,6 +22,7 @@ export default async function EditProductPage({
 
   const [product, categories] = await Promise.all([getLibraryProduct(id), listCategories()]);
   if (!product) notFound();
+  const activity = await getEntityActivity([{ type: "product", ids: [product.id] }]);
 
   return (
     <div className="flex flex-col gap-10">
@@ -55,6 +58,13 @@ export default async function EditProductPage({
           </p>
         </div>
         <ProductImages productId={product.id} productName={product.name} images={product.images} />
+      </section>
+
+      <section aria-labelledby="product-history-heading" className="flex flex-col gap-3">
+        <h2 id="product-history-heading" className="text-heading-2 text-primary">
+          History
+        </h2>
+        <ActivityList entries={activity} empty="No changes recorded yet." />
       </section>
 
       <section

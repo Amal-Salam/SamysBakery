@@ -269,4 +269,14 @@ test("admin sees low stock, adds stock with a reason, and it's recorded", async 
     .eq("actor_user_id", admin.id)
     .single();
   expect(audit?.metadata).toMatchObject({ quantity: 5, available_before: 2, available_after: 7 });
+
+  // The menu's activity shows the whole week's story, with who did it.
+  await page.goto("/admin/menu");
+  const activity = page.getByRole("region", { name: "Menu activity" });
+  await expect(activity.getByText(`+5 ${sourdough} (available 2 → 7)`)).toBeVisible();
+  await expect(activity.getByText(`${sourdough} added: ₦6,500, 20 available`)).toBeVisible();
+  await expect(activity.getByText(`${brioche} removed from the menu`)).toBeVisible();
+  await expect(activity.getByText("Price ₦5,000 → ₦5,500")).toBeVisible();
+  await expect(activity.getByText("Menu unpublished (back to draft)")).toBeVisible();
+  await expect(activity.getByText(/· E2E Menu Admin$/).first()).toBeVisible();
 });

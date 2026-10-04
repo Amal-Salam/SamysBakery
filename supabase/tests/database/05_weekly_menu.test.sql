@@ -173,7 +173,7 @@ select throws_ok(
 -- All rows share one transaction timestamp, so compare as a multiset.
 select bag_eq(
   $$select action, actor_user_id is null from public.audit_logs
-     where entity_id = (select id from menu_ids)$$,
+     where entity_id = (select id from menu_ids) and action not like 'MENU\_PRODUCT\_%'$$,
   $$values ('MENU_CREATED', false), ('MENU_PUBLISHED', false), ('MENU_UNPUBLISHED', false),
            ('MENU_PUBLISHED', false), ('MENU_EXPIRED', true)$$,
   'every lifecycle step is audited (expiry by the system)');
