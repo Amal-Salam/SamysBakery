@@ -27,7 +27,7 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
       <div className="pattern-wheat">
       <section className="mx-auto grid w-full max-w-6xl items-center gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 md:py-20">
         <div className="flex flex-col items-start gap-6">
-          <p className="text-caption font-semibold tracking-[0.2em] text-accent uppercase">Samy&apos;s Bakery</p>
+          <p className="text-caption font-semibold tracking-[0.2em] text-accent uppercase">New Menu Every Tuesday - Orders Close By Saturday</p>
           <h1 className="text-display-xl text-primary">Something delicious is always baking.</h1>
           <p className="max-w-md text-body-lg text-muted-foreground">
             Small-batch bakes, exciting flavours, and artisanal treats made fresh for your week.
