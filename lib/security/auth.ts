@@ -3,6 +3,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
+import { getApiContext } from "@/lib/api/context";
 import { ADMIN_LOGIN_PATH, LOGIN_PATH, safeRedirectPath } from "@/lib/auth/routes";
 import { AppError } from "@/lib/errors";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -23,7 +24,11 @@ export type CurrentUser = {
  */
 export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   const supabase = await createSupabaseServerClient();
-  const { data: claimsData, error: claimsError } = await supabase.auth.getClaims();
+  // Mobile API requests carry the token explicitly; it is verified here exactly
+  // like a cookie session (signature/expiry checked by Supabase Auth).
+  const api = getApiContext();
+  if (api && !api.accessToken) return null;
+  const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(api?.accessToken ?? undefined);
   const claims = claimsData?.claims;
   if (claimsError || !claims?.sub) return null;
 

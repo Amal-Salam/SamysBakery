@@ -104,3 +104,13 @@ export async function latestAuthLink(to: string, timeoutMs = 20_000): Promise<st
   }
   throw new Error("No auth email arrived");
 }
+
+/** Signs in through Supabase Auth as the mobile app would and returns the access token. */
+export async function accessTokenFor(account: Account): Promise<string> {
+  const client = createClient<Database>(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { data, error } = await client.auth.signInWithPassword({ email: account.email, password: account.password });
+  if (error || !data.session) throw new Error("sign-in failed");
+  return data.session.access_token;
+}

@@ -1,8 +1,10 @@
 import "server-only";
 
 import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
+import { getApiContext } from "@/lib/api/context";
 import { publicEnv } from "@/lib/env";
 import type { Database } from "@/types/database";
 
@@ -11,6 +13,15 @@ import type { Database } from "@/types/database";
  * Create a new client for every request; never share one across requests.
  */
 export async function createSupabaseServerClient() {
+  // Mobile API (/api/v1): act as the bearer-token user instead of reading cookies.
+  const api = getApiContext();
+  if (api) {
+    return createClient<Database>(publicEnv.NEXT_PUBLIC_SUPABASE_URL, publicEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, {
+      global: { headers: api.accessToken ? { Authorization: `Bearer ${api.accessToken}` } : {} },
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    }) as unknown as ReturnType<typeof createServerClient<Database>>;
+  }
+
   const cookieStore = await cookies();
 
   return createServerClient<Database>(

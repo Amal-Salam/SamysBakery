@@ -8,7 +8,8 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Skip static assets, image optimisation, and the Paystack webhook (signature-authenticated).
-    "/((?!_next/static|_next/image|favicon.ico|api/paystack/webhook|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico)$).*)",
+    // Skip static assets, image optimisation, the Paystack webhook (signature-authenticated)
+    // and the mobile API (bearer-token authenticated in lib/api/handler.ts).
+    "/((?!_next/static|_next/image|favicon.ico|api/paystack/webhook|api/v1/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico)$).*)",
   ],
 };
