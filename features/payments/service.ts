@@ -23,10 +23,20 @@ const PAYMENT_STARTS_PER_WINDOW = 10;
 const PAYMENT_WINDOW_SECONDS = 15 * 60;
 
 /** Server-side Paystack initialization. Returns the hosted checkout URL (redirect flow). */
+/**
+ * Where Paystack returns the customer. Chosen by the server from a fixed list —
+ * never a URL supplied by the client (no open redirect).
+ *  - web: the website's verification page (signed-in browser session).
+ *  - app: a static "return to the app" page; the mobile app then asks the API
+ *    for the verified payment status.
+ */
+const RETURN_PATHS = { web: "/checkout/complete", app: "/payment-return" } as const;
+
 export async function startPayment(input: {
   deliveryDate: string;
   addressId: string;
   specialNotes: string | null;
+  returnTo?: keyof typeof RETURN_PATHS;
 }): Promise<{ authorizationUrl: string; reference: string }> {
   const user = await assertUser();
 
@@ -43,14 +53,18 @@ export async function startPayment(input: {
   }
 
   // Validate + hold stock + create the PENDING payment with a DB-derived amount.
-  const context = await reserveCheckout(input);
+  const context = await reserveCheckout({
+    deliveryDate: input.deliveryDate,
+    addressId: input.addressId,
+    specialNotes: input.specialNotes,
+  });
 
   try {
     return await initializeTransaction({
       email: user.email,
       amountKobo: toKobo(context.amount),
       reference: context.reference,
-      callbackUrl: new URL("/checkout/complete", publicEnv.NEXT_PUBLIC_APP_URL).toString(),
+      callbackUrl: new URL(RETURN_PATHS[input.returnTo ?? "web"], publicEnv.NEXT_PUBLIC_APP_URL).toString(),
     });
   } catch (error) {
     // No Paystack transaction: free the stock immediately.
