@@ -1,7 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Tabs } from "expo-router";
 import type { ComponentProps } from "react";
-import type { ColorValue } from "react-native";
+import { View, type ColorValue } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useCart } from "@/cart/CartProvider";
@@ -13,7 +13,10 @@ type IconName = ComponentProps<typeof Ionicons>["name"];
 /** Standard, recognisable icons: filled when the tab is selected. */
 function tabIcon(name: string) {
   const TabIcon = ({ focused, color, size }: { focused: boolean; color: ColorValue; size: number }) => (
-    <Ionicons name={(focused ? name : `${name}-outline`) as IconName} color={color as string} size={size} />
+    // Selected tab: a small rounded highlight behind the filled icon.
+    <View style={{ width: 54, height: 30, borderRadius: 999, alignItems: "center", justifyContent: "center", backgroundColor: focused ? "rgba(123, 48, 69, 0.12)" : "transparent" }}>
+      <Ionicons name={(focused ? name : `${name}-outline`) as IconName} color={color as string} size={size} />
+    </View>
   );
   return TabIcon;
 }

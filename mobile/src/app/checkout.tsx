@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Text, TextInput, View } from "react-native";
 
 import { BasketDrawing, WheatDivider } from "@/components/ornaments";
-import { Button, Card, Choice, Notice, Screen, StateView } from "@/components/ui";
+import { Button, Card, Choice, Notice, Screen, SkeletonList, StateView } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
 import { DELIVERY_FEE_NOTE, formatDeliveryDate, formatLongDate, formatNaira } from "@/lib/format";
 import type { CheckoutContext, CheckoutSummary } from "@/lib/types";
@@ -34,7 +34,7 @@ export default function CheckoutScreen() {
   if (loading && !context) {
     return (
       <Screen edges={["left", "right"]}>
-        <StateView loading />
+        <SkeletonList variant="lines" count={4} />
       </Screen>
     );
   }
@@ -97,13 +97,13 @@ export default function CheckoutScreen() {
                   {line.quantity} × {formatNaira(line.unitPrice)}
                 </Text>
               </View>
-              <Text style={{ fontFamily: fonts.bodyMedium, fontSize: 15, color: colors.text }}>{formatNaira(line.lineTotal)}</Text>
+              <Text style={[type.price, { fontFamily: fonts.bodyMedium, fontSize: 15 }]}>{formatNaira(line.lineTotal)}</Text>
             </View>
           ))}
           <WheatDivider />
           <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
             <Text style={{ fontFamily: fonts.bodySemibold, fontSize: 18, color: colors.text }}>Subtotal</Text>
-            <Text style={{ fontFamily: fonts.bodySemibold, fontSize: 18, color: colors.text }}>{formatNaira(summary.subtotal)}</Text>
+            <Text style={[type.price, { fontSize: 18 }]}>{formatNaira(summary.subtotal)}</Text>
           </View>
         </Card>
         <Card>

@@ -4,7 +4,7 @@ import { Alert, Text, View } from "react-native";
 
 import { LoafDrawing, WheatDivider } from "@/components/ornaments";
 import { StatusPill } from "@/components/StatusPill";
-import { Button, Card, Notice, Screen, StateView } from "@/components/ui";
+import { Button, Card, Notice, Screen, SkeletonList, StateView } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
 import { DELIVERY_FEE_NOTE, formatLongDate, formatNaira, formatShortDate } from "@/lib/format";
 import type { OrderDetail } from "@/lib/types";
@@ -30,7 +30,7 @@ export default function OrderScreen() {
   if (!order) {
     return (
       <Screen edges={["left", "right"]}>
-        <StateView loading />
+        <SkeletonList variant="lines" count={4} />
       </Screen>
     );
   }
@@ -78,13 +78,13 @@ export default function OrderScreen() {
                 {item.quantity} × {formatNaira(item.unitPrice)}
               </Text>
             </View>
-            <Text style={{ fontFamily: fonts.bodyMedium, color: colors.text }}>{formatNaira(item.lineTotal)}</Text>
+            <Text style={[type.price, { fontFamily: fonts.bodyMedium }]}>{formatNaira(item.lineTotal)}</Text>
           </View>
         ))}
         <WheatDivider />
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <Text style={{ fontFamily: fonts.bodySemibold, fontSize: 18, color: colors.text }}>Subtotal</Text>
-          <Text style={{ fontFamily: fonts.bodySemibold, fontSize: 18, color: colors.text }}>{formatNaira(order.subtotal)}</Text>
+          <Text style={[type.price, { fontSize: 18 }]}>{formatNaira(order.subtotal)}</Text>
         </View>
       </Card>
 

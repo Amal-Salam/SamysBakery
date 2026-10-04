@@ -1,4 +1,8 @@
-import { CormorantGaramond_600SemiBold, CormorantGaramond_700Bold } from "@expo-google-fonts/cormorant-garamond";
+import {
+  CormorantGaramond_500Medium_Italic,
+  CormorantGaramond_600SemiBold,
+  CormorantGaramond_700Bold,
+} from "@expo-google-fonts/cormorant-garamond";
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from "@expo-google-fonts/inter";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
@@ -16,6 +20,7 @@ export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     CormorantGaramond_600SemiBold,
     CormorantGaramond_700Bold,
+    CormorantGaramond_500Medium_Italic,
     Inter_400Regular,
     Inter_500Medium,
     Inter_600SemiBold,

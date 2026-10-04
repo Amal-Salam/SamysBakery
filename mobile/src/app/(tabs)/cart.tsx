@@ -8,7 +8,8 @@ import { useCart } from "@/cart/CartProvider";
 import { BasketDrawing, WheatDivider } from "@/components/ornaments";
 import { SignInPrompt } from "@/components/SignInPrompt";
 import { GlassHeader } from "@/components/glass";
-import { Button, Card, Notice, Screen, StateView, Stepper } from "@/components/ui";
+import { RiseIn } from "@/components/motion";
+import { Button, Card, Notice, Screen, SkeletonList, StateView, Stepper } from "@/components/ui";
 import { ApiError } from "@/lib/api";
 import { cartIssueMessage, formatNaira } from "@/lib/format";
 import type { CartItem } from "@/lib/types";
@@ -35,7 +36,7 @@ function CartLine({ item, onError }: { item: CartItem; onError: (message: string
     <Card>
       <View style={{ flexDirection: "row", gap: space.md }}>
         {item.image ? (
-          <Image source={{ uri: item.image.url }} accessibilityLabel={item.image.alt} style={{ width: 64, height: 64, borderRadius: radius.sm }} />
+          <Image source={{ uri: item.image.url }} accessibilityLabel={item.image.alt} transition={300} style={{ width: 68, height: 68, borderRadius: radius.lg }} />
         ) : null}
         <View style={{ flex: 1, gap: 2 }}>
           <Text style={[type.h2, { fontSize: 20, color: colors.text }]}>{item.name}</Text>
@@ -43,7 +44,7 @@ function CartLine({ item, onError }: { item: CartItem; onError: (message: string
           {issue ? <Text style={[type.small, { color: colors.error }]}>{issue}</Text> : null}
         </View>
         {item.lineTotal !== null && !item.issue ? (
-          <Text style={{ fontFamily: fonts.bodySemibold, fontSize: 15, color: colors.text }}>{formatNaira(item.lineTotal)}</Text>
+          <Text style={[type.price, { fontSize: 15 }]}>{formatNaira(item.lineTotal)}</Text>
         ) : null}
       </View>
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: space.sm }}>
@@ -91,7 +92,7 @@ export default function CartScreen() {
     ]);
 
   return (
-    <Screen onRefresh={refresh} refreshing={loading && cart !== null}>
+    <Screen onRefresh={refresh} refreshing={loading && cart !== null} compactTitle="Your Cart">
       <GlassHeader>
         <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
           <BasketDrawing width={46} height={38} />
@@ -104,7 +105,7 @@ export default function CartScreen() {
       {message ? <Notice tone="error">{message}</Notice> : null}
 
       {cart === null ? (
-        <StateView loading />
+        <SkeletonList variant="lines" count={3} />
       ) : cart.items.length === 0 ? (
         <StateView
           illustration={<BasketDrawing />}
@@ -113,13 +114,15 @@ export default function CartScreen() {
         />
       ) : (
         <>
-          {cart.items.map((item) => (
-            <CartLine key={item.productId} item={item} onError={setMessage} />
+          {cart.items.map((item, i) => (
+            <RiseIn key={item.productId} index={i}>
+              <CartLine item={item} onError={setMessage} />
+            </RiseIn>
           ))}
           <WheatDivider />
           <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
             <Text style={{ fontFamily: fonts.bodySemibold, fontSize: 18, color: colors.text }}>Subtotal</Text>
-            <Text style={{ fontFamily: fonts.bodySemibold, fontSize: 18, color: colors.text }}>{formatNaira(cart.subtotal)}</Text>
+            <Text style={[type.price, { fontSize: 18 }]}>{formatNaira(cart.subtotal)}</Text>
           </View>
           <Text style={type.caption}>Prices and availability are checked again at checkout. Your cart doesn&apos;t hold stock until you pay.</Text>
           {!cart.canCheckout ? <Notice tone="error">Some items in your cart need attention.</Notice> : null}

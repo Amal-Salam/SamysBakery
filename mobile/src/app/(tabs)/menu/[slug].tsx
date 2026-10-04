@@ -5,6 +5,7 @@ import { Text, View } from "react-native";
 
 import { useAuth } from "@/auth/AuthProvider";
 import { useCart } from "@/cart/CartProvider";
+import { Skeleton } from "@/components/motion";
 import { DoodleBadge, LoafDrawing, WheatDivider } from "@/components/ornaments";
 import { Button, Notice, Screen, StateView, Stepper } from "@/components/ui";
 import { ApiError } from "@/lib/api";
@@ -40,7 +41,10 @@ export default function ProductScreen() {
   if (loading && !product) {
     return (
       <Screen edges={["left", "right"]}>
-        <StateView loading />
+        <Skeleton height={320} round={radius.xl} />
+        <Skeleton height={34} width="70%" />
+        <Skeleton height={20} width="35%" />
+        <Skeleton height={60} />
       </Screen>
     );
   }
@@ -75,14 +79,15 @@ export default function ProductScreen() {
           source={{ uri: product.image.url }}
           accessibilityLabel={product.image.alt}
           contentFit="cover"
-          style={{ width: "100%", aspectRatio: 1, borderRadius: radius.lg, backgroundColor: colors.surfaceMuted }}
+          transition={450}
+          style={{ width: "100%", aspectRatio: 1, borderRadius: radius.xl, backgroundColor: colors.surfaceMuted }}
         />
       ) : null}
       <Text style={type.display} accessibilityRole="header">
         {product.name}
       </Text>
       <View style={{ flexDirection: "row", alignItems: "center", gap: space.lg, flexWrap: "wrap" }}>
-        <Text style={{ fontFamily: fonts.bodySemibold, fontSize: 22, color: colors.text }}>{formatNaira(product.price)}</Text>
+        <Text style={[type.price, { fontSize: 22 }]}>{formatNaira(product.price)}</Text>
         <DoodleBadge tone={BADGE_TONE[product.availabilityStatus]}>
           {availabilityText(product.availabilityStatus, product.availableQuantity)}
         </DoodleBadge>

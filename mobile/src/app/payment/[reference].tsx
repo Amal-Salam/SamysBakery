@@ -1,13 +1,13 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AppState, Text, View } from "react-native";
+import { ActivityIndicator, AppState, Text, View } from "react-native";
 
 import { useCart } from "@/cart/CartProvider";
 import { BasketDrawing, DoodleBadge, LoafDrawing } from "@/components/ornaments";
 import { Button, Notice, Screen, StateView } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
 import type { PaymentStatusResult } from "@/lib/types";
-import { space, type } from "@/theme";
+import { colors, space, type } from "@/theme";
 
 const REFERENCE = /^SAMY-[0-9A-F]{32}$/;
 const POLL_MS = 3000;
@@ -133,7 +133,7 @@ export default function PaymentScreen() {
           <Button label="Go to Orders" variant="outline" onPress={() => router.navigate("/orders")} />
         </View>
       ) : (
-        <StateView loading />
+        <ActivityIndicator color={colors.primary} accessibilityLabel="Checking payment" style={{ marginTop: space.lg }} />
       )}
       {problem ? <Notice tone="error">{problem}</Notice> : null}
     </Screen>

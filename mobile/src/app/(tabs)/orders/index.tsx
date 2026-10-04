@@ -1,15 +1,16 @@
 import { router } from "expo-router";
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 import { useAuth } from "@/auth/AuthProvider";
 import { LoafDrawing } from "@/components/ornaments";
 import { SignInPrompt } from "@/components/SignInPrompt";
 import { StatusPill } from "@/components/StatusPill";
-import { Button, Card, Notice, Screen, StateView } from "@/components/ui";
+import { PressableScale, RiseIn } from "@/components/motion";
+import { Button, Card, Notice, Screen, SkeletonList, StateView } from "@/components/ui";
 import { formatLongDate, formatNaira, formatShortDate } from "@/lib/format";
 import type { OrderSummary } from "@/lib/types";
 import { useApi } from "@/lib/use-api";
-import { colors, fonts, space, type } from "@/theme";
+import { colors, space, type } from "@/theme";
 
 export default function OrdersScreen() {
   const { status } = useAuth();
@@ -24,7 +25,7 @@ export default function OrdersScreen() {
   }
 
   return (
-    <Screen onRefresh={reload} refreshing={loading && orders !== null}>
+    <Screen onRefresh={reload} refreshing={loading && orders !== null} compactTitle="Your orders">
       <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
         <LoafDrawing size={36} />
         <Text style={type.display} accessibilityRole="header">
@@ -33,7 +34,7 @@ export default function OrdersScreen() {
       </View>
       {error ? <Notice tone="error">{error}</Notice> : null}
       {orders === null ? (
-        loading ? <StateView loading /> : null
+        loading ? <SkeletonList variant="lines" count={3} /> : null
       ) : orders.length === 0 ? (
         <StateView
           illustration={<LoafDrawing size={64} />}
@@ -41,9 +42,9 @@ export default function OrdersScreen() {
           action={<Button label="View This Week's Menu" onPress={() => router.navigate("/menu")} />}
         />
       ) : (
-        orders.map((order) => (
-          <Pressable
-            key={order.orderNumber}
+        orders.map((order, i) => (
+          <RiseIn key={order.orderNumber} index={i}>
+          <PressableScale
             accessibilityRole="button"
             accessibilityLabel={`${order.orderNumber}, ${formatNaira(order.subtotal)}, delivery ${formatLongDate(order.deliveryDate)}`}
             onPress={() => router.push({ pathname: "/orders/[orderNumber]", params: { orderNumber: order.orderNumber } })}
@@ -57,10 +58,11 @@ export default function OrdersScreen() {
               <Text style={type.body}>{order.items.map((item) => `${item.quantity} × ${item.name}`).join(", ")}</Text>
               <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
                 <Text style={type.small}>Delivery: {formatLongDate(order.deliveryDate)}</Text>
-                <Text style={{ fontFamily: fonts.bodySemibold, color: colors.text }}>{formatNaira(order.subtotal)}</Text>
+                <Text style={type.price}>{formatNaira(order.subtotal)}</Text>
               </View>
             </Card>
-          </Pressable>
+          </PressableScale>
+          </RiseIn>
         ))
       )}
     </Screen>

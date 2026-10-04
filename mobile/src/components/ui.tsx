@@ -1,20 +1,23 @@
-import type { ReactNode } from "react";
+import { BlurView } from "expo-blur";
+import { useState, type ReactNode } from "react";
 import {
   ActivityIndicator,
+  Animated,
   Pressable,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
   type TextInputProps,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 
-import { colors, fonts, radius, space, touchTarget, type } from "@/theme";
+import { colors, fonts, radius, softShadow, space, touchTarget, type } from "@/theme";
 
-import { useTabBarSpace } from "./glass";
+import { GLASS, useTabBarSpace } from "./glass";
+import { PressableScale, Skeleton } from "./motion";
 
 export function Screen({
   children,
@@ -22,30 +25,51 @@ export function Screen({
   onRefresh,
   refreshing = false,
   edges = ["top", "left", "right"],
+  compactTitle,
 }: {
   children: ReactNode;
   scroll?: boolean;
   onRefresh?: () => void;
   refreshing?: boolean;
   edges?: ("top" | "left" | "right" | "bottom")[];
+  /** When set, the large title tucks into a compact frosted bar as the page scrolls. */
+  compactTitle?: string;
 }) {
   const tabBarSpace = useTabBarSpace();
+  const insets = useSafeAreaInsets();
+  const [scrollY] = useState(() => new Animated.Value(0));
   const bottom = tabBarSpace ? { paddingBottom: tabBarSpace + space.xl } : null;
+  const barOpacity = scrollY.interpolate({ inputRange: [50, 90], outputRange: [0, 1], extrapolate: "clamp" });
+  const barShift = scrollY.interpolate({ inputRange: [50, 90], outputRange: [-8, 0], extrapolate: "clamp" });
   return (
     <SafeAreaView style={styles.safe} edges={edges}>
       {scroll ? (
-        <ScrollView
+        <Animated.ScrollView
           contentContainerStyle={[styles.content, bottom]}
           keyboardShouldPersistTaps="handled"
+          scrollEventThrottle={16}
+          onScroll={compactTitle ? Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true }) : undefined}
           refreshControl={
             onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} colors={[colors.primary]} /> : undefined
           }
         >
           {children}
-        </ScrollView>
+        </Animated.ScrollView>
       ) : (
         <View style={[styles.content, { flex: 1 }, bottom]}>{children}</View>
       )}
+      {compactTitle ? (
+        <Animated.View
+          pointerEvents="none"
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+          style={[styles.compactBar, { paddingTop: insets.top, height: insets.top + 48, opacity: barOpacity, transform: [{ translateY: barShift }] }]}
+        >
+          <BlurView intensity={50} tint="light" style={StyleSheet.absoluteFill} />
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(248, 243, 234, 0.82)" }]} />
+          <Text style={styles.compactTitle}>{compactTitle}</Text>
+        </Animated.View>
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -66,38 +90,52 @@ export function Button({
   accessibilityHint?: string;
 }) {
   const inactive = disabled || loading;
+  const content = loading ? (
+    <ActivityIndicator color={variant === "primary" ? colors.primaryForeground : colors.primary} />
+  ) : (
+    <Text
+      style={[
+        styles.buttonText,
+        variant === "primary" && { color: colors.primaryForeground },
+        variant === "outline" && { color: colors.primary },
+        variant === "link" && { color: colors.accent, textDecorationLine: "underline" },
+      ]}
+    >
+      {label}
+    </Text>
+  );
   return (
-    <Pressable
+    <PressableScale
+      scaleTo={variant === "link" ? 1 : 0.97}
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled: inactive, busy: loading }}
       disabled={inactive}
       onPress={onPress}
-      style={({ pressed }) => [
+      style={[
         styles.button,
         variant === "primary" && styles.primary,
         variant === "outline" && styles.outline,
         variant === "link" && styles.link,
         inactive && { opacity: 0.6 },
-        pressed && !inactive && { opacity: 0.85 },
       ]}
     >
-      {loading ? (
-        <ActivityIndicator color={variant === "primary" ? colors.primaryForeground : colors.primary} />
-      ) : (
-        <Text
-          style={[
-            styles.buttonText,
-            variant === "primary" && { color: colors.primaryForeground },
-            variant === "outline" && { color: colors.primary },
-            variant === "link" && { color: colors.accent, textDecorationLine: "underline" },
-          ]}
-        >
-          {label}
-        </Text>
-      )}
-    </Pressable>
+      {variant === "primary" ? (
+        // A subtle top-to-bottom sheen on the deep brown.
+        <Svg style={StyleSheet.absoluteFill} preserveAspectRatio="none">
+          <Defs>
+            <LinearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#6A4335" />
+              <Stop offset="1" stopColor={colors.primary} />
+            </LinearGradient>
+          </Defs>
+          <Rect width="100%" height="100%" fill="url(#sheen)" />
+        </Svg>
+      ) : null}
+      {variant === "primary" ? <View style={styles.sheenEdge} /> : null}
+      {content}
+    </PressableScale>
   );
 }
 
@@ -137,14 +175,18 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   content: { padding: space.xl, gap: space.lg },
   button: {
-    minHeight: touchTarget,
-    borderRadius: radius.sm,
-    paddingHorizontal: space.lg,
+    minHeight: touchTarget + 4,
+    borderRadius: radius.pill,
+    paddingHorizontal: space.xl,
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
   },
-  primary: { backgroundColor: colors.primary },
+  primary: { backgroundColor: colors.primary, ...softShadow, shadowOpacity: 0.2 },
   outline: { borderWidth: 1, borderColor: colors.primary, backgroundColor: colors.surface },
+  sheenEdge: { position: "absolute", top: 0, left: 16, right: 16, height: 1, backgroundColor: "rgba(255, 255, 255, 0.22)" },
+  compactBar: { position: "absolute", top: 0, left: 0, right: 0, justifyContent: "flex-end", paddingHorizontal: space.xl, paddingBottom: space.sm, borderBottomWidth: 1, borderBottomColor: GLASS.edge, overflow: "hidden" },
+  compactTitle: { fontFamily: fonts.heading, fontSize: 20, color: colors.primary },
   link: { minHeight: 40, paddingHorizontal: 0, alignItems: "flex-start" },
   buttonText: { fontFamily: fonts.bodyMedium, fontSize: 16 },
   label: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.text },
@@ -163,10 +205,10 @@ const styles = StyleSheet.create({
   notice: { borderWidth: 1, borderRadius: radius.md, padding: space.md, backgroundColor: colors.surface },
   stepper: { flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm, alignSelf: "flex-start", backgroundColor: colors.surface },
   stepBtn: { width: touchTarget, height: touchTarget, alignItems: "center", justifyContent: "center" },
-  choice: { flexDirection: "row", alignItems: "center", gap: space.md, minHeight: touchTarget + 8, padding: space.md, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, backgroundColor: colors.surface },
+  choice: { flexDirection: "row", alignItems: "center", gap: space.md, minHeight: touchTarget + 8, padding: space.md, borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg, backgroundColor: colors.surface },
   radio: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: colors.border, alignItems: "center", justifyContent: "center" },
   radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.accent },
-  card: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg, padding: space.lg, gap: space.sm },
+  card: { backgroundColor: colors.surface, borderRadius: radius.xl, padding: space.lg, gap: space.sm, ...softShadow },
 });
 
 /** Loading / error / empty states with an optional drawing (Design System §28). */
@@ -183,13 +225,7 @@ export function StateView({
   action?: ReactNode;
   loading?: boolean;
 }) {
-  if (loading) {
-    return (
-      <View style={{ paddingVertical: space.xxl, alignItems: "center" }} accessibilityLabel="Loading" accessibilityRole="progressbar">
-        <ActivityIndicator color={colors.primary} />
-      </View>
-    );
-  }
+  if (loading) return <SkeletonList variant="lines" count={3} />;
   return (
     <View style={{ paddingVertical: space.xxl, alignItems: "center", gap: space.md }}>
       {illustration}
@@ -260,4 +296,23 @@ export function Choice({ selected, onPress, title, detail }: { selected: boolean
 
 export function Card({ children }: { children: ReactNode }) {
   return <View style={styles.card}>{children}</View>;
+}
+
+/** Content-shaped loading placeholders. */
+export function SkeletonList({ variant = "cards", count = 3 }: { variant?: "cards" | "lines"; count?: number }) {
+  return (
+    <View accessibilityRole="progressbar" accessibilityLabel="Loading" style={{ gap: variant === "cards" ? space.xl : space.md }}>
+      {Array.from({ length: count }, (_, i) =>
+        variant === "cards" ? (
+          <View key={i} style={{ gap: space.sm }}>
+            <Skeleton height={190} round={radius.xl} />
+            <Skeleton height={18} width="62%" />
+            <Skeleton height={14} width="40%" />
+          </View>
+        ) : (
+          <Skeleton key={i} height={84} round={radius.xl} />
+        )
+      )}
+    </View>
+  );
 }
