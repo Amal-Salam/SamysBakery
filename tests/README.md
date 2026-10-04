@@ -11,7 +11,7 @@ hosted project is only touched by `npm run test:schema:linked`, inside rolled-ba
 | Database (pgTAP) | `npm run test:schema` | `npx supabase start` |
 | Integration + security (Data API) | `npm run test:db` | `npx supabase start` |
 | E2E (Playwright) | `npx playwright test` | `npx supabase start` (with its mail catcher, port 54324) |
-| Database on the hosted project | `npm run test:schema:linked` | `npx supabase link` |
+| Database on the hosted project | `npm run test:schema:linked` | `npx supabase link` — not once real customers use it (see DEPLOYMENT.md) |
 
 E2E builds a production bundle into `.next-e2e` and starts it with a mock Paystack
 (`tests/e2e/mock-paystack.mjs`, port 3999) and mock Resend (`mock-resend.mjs`, port 3998).
