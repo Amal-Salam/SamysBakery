@@ -1,6 +1,6 @@
 # Samy's Bakery v2
 
-Online storefront and admin system for Samy's Bakery, an artisanal micro-bakery in Abuja.
+Online storefront and admin system for Samy's Bakery, an artisanal micro-bakery
 
 Read [AGENTS.md](AGENTS.md) and the specifications in [docs/](docs/) before contributing.
 
