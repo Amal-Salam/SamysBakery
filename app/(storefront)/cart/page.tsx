@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { BasketDrawing } from "@/components/brand/ornaments";
 import { clearCartAction } from "@/actions/cart";
 import { CartLine } from "@/components/cart/cart-line";
 import { CartNoticeBanner } from "@/components/cart/cart-notice";
@@ -22,6 +23,7 @@ export default async function CartPage() {
 
       {cart.items.length === 0 ? (
         <EmptyState
+          illustration={<BasketDrawing className="h-24 w-28" />}
           title="Your cart is empty."
           action={
             <Button asChild size="lg">

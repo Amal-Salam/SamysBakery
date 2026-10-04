@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { LoafDrawing } from "@/components/brand/ornaments";
 import { OrderList } from "@/components/account/order-list";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/states";
@@ -15,6 +16,7 @@ export default async function MyOrdersPage() {
       <h1 className="text-heading-1 text-primary">Your orders</h1>
       {orders.length === 0 ? (
         <EmptyState
+          illustration={<LoafDrawing className="size-16" />}
           title="You haven't placed any orders yet."
           action={
             <Button asChild>

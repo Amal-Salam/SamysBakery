@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { BasketDrawing, OvenDrawing } from "@/components/brand/ornaments";
 import { CheckoutFlow } from "@/components/checkout/checkout-flow";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/states";
@@ -27,6 +28,7 @@ export default async function CheckoutPage({ searchParams }: PageProps<"/checkou
 
       {cart.items.length === 0 ? (
         <EmptyState
+          illustration={<BasketDrawing className="h-24 w-28" />}
           title="Your cart is empty."
           action={
             <Button asChild size="lg">
@@ -46,6 +48,7 @@ export default async function CheckoutPage({ searchParams }: PageProps<"/checkou
         />
       ) : context.deliveryDates.length === 0 ? (
         <EmptyState
+          illustration={<OvenDrawing className="h-24 w-28" />}
           title="Ordering for this week has closed."
           description={`Orders for today close at ${formatClockTime(context.cutoff)}, and there are no delivery days left this week. A new menu is coming soon.`}
           action={

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
+import { DoodleBadge } from "@/components/brand/doodle-badge";
+import { OvenDrawing, RollingPinDrawing, WheatDrawing } from "@/components/brand/ornaments";
 import { ProductGrid } from "@/components/storefront/product-card";
 import { EmptyState, LoadingState } from "@/components/ui/states";
 import { groupByCategory } from "@/features/weekly-menu/rules";
@@ -16,7 +18,13 @@ export default function MenuPage() {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-4 py-12 sm:px-6 md:py-16">
       <header className="flex flex-col gap-3">
-        <h1 className="text-display-l text-primary">This Week&apos;s Menu</h1>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <WheatDrawing className="size-10 text-primary md:size-12" />
+          <h1 className="text-display-l text-primary">This Week&apos;s Menu</h1>
+          <DoodleBadge tone="accent" shape="oval">
+            This week only
+          </DoodleBadge>
+        </div>
         <p className="max-w-xl text-muted-foreground">
           A new selection of cakes, breads, and pastries, thoughtfully chosen for the week.
         </p>
@@ -41,6 +49,7 @@ async function MenuContent() {
 
       {!menu || menu.products.length === 0 ? (
         <EmptyState
+          illustration={<OvenDrawing className="h-24 w-28" />}
           title="No products are currently available."
           description="This week's menu hasn't been published yet. Please check back soon."
         />
@@ -53,9 +62,12 @@ async function MenuContent() {
             className="flex flex-col gap-6"
           >
             {showHeadings ? (
-              <h2 id={`category-${index}`} className="text-heading-1 text-primary">
-                {group.name ?? "Also this week"}
-              </h2>
+              <div className="flex items-center gap-3">
+                <RollingPinDrawing className="size-9 text-primary" />
+                <h2 id={`category-${index}`} className="text-heading-1 text-primary">
+                  {group.name ?? "Also this week"}
+                </h2>
+              </div>
             ) : null}
             <ProductGrid products={group.products} prioritizeFirst={index === 0} />
           </section>

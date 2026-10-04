@@ -3,6 +3,8 @@ import type * as React from "react";
 import { cn } from "@/lib/utils";
 
 type StateProps = {
+  /** Optional decorative drawing shown above the title (aria-hidden). */
+  illustration?: React.ReactNode;
   title: string;
   description?: string;
   action?: React.ReactNode;
@@ -31,7 +33,7 @@ function LoadingState({
   );
 }
 
-function EmptyState({ title, description, action, className }: StateProps) {
+function EmptyState({ illustration, title, description, action, className }: StateProps) {
   return (
     <div
       className={cn(
@@ -39,6 +41,7 @@ function EmptyState({ title, description, action, className }: StateProps) {
         className
       )}
     >
+      {illustration ? <div className="mb-2 text-primary">{illustration}</div> : null}
       <p className="font-heading text-heading-3 font-semibold">{title}</p>
       {description ? (
         <p className="max-w-prose text-body-sm text-muted-foreground">

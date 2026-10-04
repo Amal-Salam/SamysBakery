@@ -8,6 +8,7 @@ import {
   setDefaultAddressAction,
   updateAddressAction,
 } from "@/actions/account";
+import { WhiskDrawing } from "@/components/brand/ornaments";
 import { ConfirmActionDialog } from "@/components/admin/confirm-action-dialog";
 import { Badge } from "@/components/ui/badge";
 import { FormError, FormSuccess, SubmitButton } from "@/components/ui/form";
@@ -21,7 +22,7 @@ export function AddressBook({ addresses }: { addresses: Address[] }) {
   return (
     <div className="flex flex-col gap-8">
       {addresses.length === 0 ? (
-        <EmptyState title="No saved addresses yet." description="Add one below, or save a new address at checkout." />
+        <EmptyState illustration={<WhiskDrawing className="size-16" />} title="No saved addresses yet." description="Add one below, or save a new address at checkout." />
       ) : (
         <ul className="grid gap-4 md:grid-cols-2" aria-label="Saved addresses">
           {addresses.map((address) => (
