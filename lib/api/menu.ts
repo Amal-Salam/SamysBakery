@@ -16,6 +16,8 @@ export function toApiProduct(product: StorefrontProduct) {
     price: product.price,
     image: product.image ? { url: productImageUrl(product.image.path), alt: product.image.alt } : null,
     category: product.category?.name ?? null,
+    /** Display order of the category (lower first), as on the website. */
+    categoryOrder: product.category?.displayOrder ?? null,
     availableQuantity: product.availableQuantity,
     availabilityStatus: product.availabilityStatus,
   };

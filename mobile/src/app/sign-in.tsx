@@ -1,5 +1,5 @@
-import { Redirect } from "expo-router";
-import { useState } from "react";
+import { router } from "expo-router";
+import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 
 import { useAuth } from "@/auth/AuthProvider";
@@ -14,7 +14,13 @@ export default function SignInScreen() {
   const [errors, setErrors] = useState<{ email?: string; password?: string; form?: string }>({});
   const [busy, setBusy] = useState(false);
 
-  if (status === "signedIn") return <Redirect href="/account" />;
+  // Once signed in, go back to where the customer came from.
+  useEffect(() => {
+    if (status === "signedIn") {
+      if (router.canGoBack()) router.back();
+      else router.replace("/");
+    }
+  }, [status]);
 
   async function submit() {
     const next: typeof errors = {};
@@ -29,8 +35,8 @@ export default function SignInScreen() {
   }
 
   return (
-    <Screen>
-      <View style={{ gap: space.xs, marginTop: space.xl }}>
+    <Screen edges={["left", "right", "bottom"]}>
+      <View style={{ gap: space.xs }}>
         <Text style={[type.caption, { letterSpacing: 2, textTransform: "uppercase" }]}>Samy&apos;s Bakery</Text>
         <Text style={type.display} accessibilityRole="header">
           Sign in
