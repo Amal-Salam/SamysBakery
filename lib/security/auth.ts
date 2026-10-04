@@ -71,6 +71,16 @@ export async function checkAdminPage(): Promise<AdminCheck> {
     : { status: "forbidden", user };
 }
 
+/**
+ * For admin pages. The admin layout already redirects signed-out visitors and
+ * shows Forbidden to customers, but Next renders a segment's page alongside its
+ * layout — so pages return early unless the viewer is an admin, and no admin
+ * query ever runs for anyone else. Cached per request.
+ */
+export async function isAdminViewer(): Promise<boolean> {
+  return (await getCurrentUser())?.role === "ADMIN";
+}
+
 // ---- Action guards (Server Actions / Route Handlers): throw AppError ----
 
 export async function assertUser(): Promise<CurrentUser> {

@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { OrdersTable } from "@/components/admin/orders/orders-table";
 import { EmptyState } from "@/components/ui/states";
 import { getCustomer } from "@/features/customers/admin";
+import { isAdminViewer } from "@/lib/security/auth";
 
 export const metadata: Metadata = { title: "Customer" };
 
@@ -12,6 +13,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const dateFormat = new Intl.DateTimeFormat("en-GB", { timeZone: "Africa/Lagos", day: "numeric", month: "long", year: "numeric" });
 
 export default async function AdminCustomerPage({ params }: PageProps<"/admin/customers/[id]">) {
+  if (!(await isAdminViewer())) return null;
   const { id } = await params;
   if (!UUID.test(id)) notFound();
   const customer = await getCustomer(id);

@@ -9,11 +9,13 @@ import { EmptyState } from "@/components/ui/states";
 import { getAdminMenu, getMenuActivity } from "@/features/weekly-menu/queries";
 import { formatWeekRange } from "@/lib/utils/dates";
 import { uuidSchema } from "@/schemas/product";
+import { isAdminViewer } from "@/lib/security/auth";
 
 export const metadata: Metadata = { title: "Weekly menu" };
 
 // Read-only view of a previous (historical) menu.
 export default async function MenuHistoryPage({ params }: PageProps<"/admin/menu/[id]">) {
+  if (!(await isAdminViewer())) return null;
   const { id } = await params;
   if (!uuidSchema.safeParse(id).success) notFound();
 

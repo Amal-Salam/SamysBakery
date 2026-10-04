@@ -15,6 +15,7 @@ import {
   type OrderStatus,
 } from "@/features/orders/rules";
 import { formatLongDate, lagosToday } from "@/lib/utils/dates";
+import { isAdminViewer } from "@/lib/security/auth";
 
 export const metadata: Metadata = { title: "Orders" };
 
@@ -46,6 +47,7 @@ const VIEW_EMPTY: Record<OrderView, string> = {
 };
 
 export default async function AdminOrdersPage({ searchParams }: PageProps<"/admin/orders">) {
+  if (!(await isAdminViewer())) return null;
   const { status, view: viewParam, q, date } = await searchParams;
   const view = ORDER_VIEWS.includes(viewParam as OrderView) ? (viewParam as OrderView) : undefined;
   const filter = !view && STATUSES.includes(status as OrderStatus) ? (status as OrderStatus) : undefined;

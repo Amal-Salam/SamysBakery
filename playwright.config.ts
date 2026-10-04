@@ -96,6 +96,10 @@ export default defineConfig({
         ...mockResend,
         NEXT_PUBLIC_APP_URL: baseURL,
         NEXT_DIST_DIR: ".next-e2e",
+        // The suite signs in hundreds of times from one IP. Honoured only against
+        // the local Supabase stack (lib/security/rate-limit.ts); limits are
+        // covered by tests/integration/rate-limits.test.ts.
+        E2E_DISABLE_RATE_LIMITS: "1",
       },
     },
   ],

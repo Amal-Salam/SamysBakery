@@ -8,6 +8,7 @@ import { ADMIN_HOME_PATH, safeRedirectPath } from "@/lib/auth/routes";
 import { publicEnv } from "@/lib/env";
 import { fail, ok, validationFailure } from "@/lib/errors";
 import { getCurrentUser } from "@/lib/security/auth";
+import { clientIp, consumeRateLimits, RATE_LIMITS, TOO_MANY_ATTEMPTS } from "@/lib/security/rate-limit";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   passwordResetRequestSchema,
@@ -35,6 +36,9 @@ export async function signIn(
   const parsed = signInSchema.safeParse(readForm(formData, "email", "password"));
   if (!parsed.success) return validationFailure(parsed.error);
   const next = safeRedirectPath(formData.get("next"), "/");
+  if (!(await allowSignIn("sign_in", parsed.data.email, RATE_LIMITS.signInPerAccount))) {
+    return fail("FORBIDDEN", TOO_MANY_ATTEMPTS);
+  }
 
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
@@ -42,6 +46,15 @@ export async function signIn(
 
   await mergeGuestCartSafely(supabase, data.user.id);
   redirect(next);
+}
+
+/** Per account+IP and per IP limits shared by customer and admin sign-in. */
+async function allowSignIn(bucket: string, email: string, perAccount: { max: number; windowSeconds: number }) {
+  const ip = await clientIp();
+  return consumeRateLimits([
+    { bucket, subject: `${ip}|${email}`, ...perAccount },
+    { bucket: "sign_in_ip", subject: ip, ...RATE_LIMITS.signInPerIp },
+  ]);
 }
 
 /** Bringing the guest cart along must never block a successful sign-in. */
@@ -65,6 +78,9 @@ export async function signUp(
   );
   if (!parsed.success) return validationFailure(parsed.error);
   const next = safeRedirectPath(formData.get("next"), "/");
+  if (!(await consumeRateLimits([{ bucket: "sign_up_ip", subject: await clientIp(), ...RATE_LIMITS.signUpPerIp }]))) {
+    return fail("FORBIDDEN", TOO_MANY_ATTEMPTS);
+  }
 
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.signUp({
@@ -102,6 +118,14 @@ export async function requestPasswordReset(
 ): Promise<ActionResult> {
   const parsed = passwordResetRequestSchema.safeParse(readForm(formData, "email"));
   if (!parsed.success) return validationFailure(parsed.error);
+  // Keyed on the email whether or not an account exists (no enumeration).
+  if (
+    !(await consumeRateLimits([
+      { bucket: "password_reset_email", subject: parsed.data.email, ...RATE_LIMITS.passwordResetPerEmail },
+    ]))
+  ) {
+    return fail("FORBIDDEN", TOO_MANY_ATTEMPTS);
+  }
 
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
@@ -148,6 +172,9 @@ export async function adminSignIn(
 ): Promise<ActionResult> {
   const parsed = signInSchema.safeParse(readForm(formData, "email", "password"));
   if (!parsed.success) return validationFailure(parsed.error);
+  if (!(await allowSignIn("admin_sign_in", parsed.data.email, RATE_LIMITS.adminSignIn))) {
+    return fail("FORBIDDEN", TOO_MANY_ATTEMPTS);
+  }
 
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.auth.signInWithPassword(parsed.data);

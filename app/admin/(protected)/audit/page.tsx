@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import { getAuditLogs, type AuditCursor } from "@/features/admin/audit";
 import { AUDIT_ACTION_NAMES } from "@/features/admin/audit-format";
+import { isAdminViewer } from "@/lib/security/auth";
 
 export const metadata: Metadata = { title: "Audit log" };
 
@@ -16,6 +17,7 @@ const TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?(Z|[+-]\d{2}:
 const ACTIONS = Object.entries(AUDIT_ACTION_NAMES).sort((a, b) => a[1].localeCompare(b[1]));
 
 export default async function AdminAuditPage({ searchParams }: PageProps<"/admin/audit">) {
+  if (!(await isAdminViewer())) return null;
   const { action: actionParam, at, id } = await searchParams;
   const action = typeof actionParam === "string" && actionParam in AUDIT_ACTION_NAMES ? actionParam : undefined;
   const before =

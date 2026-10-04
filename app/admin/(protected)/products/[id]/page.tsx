@@ -10,6 +10,7 @@ import { ProductImages } from "@/components/admin/products/product-images";
 import { getEntityActivity } from "@/features/admin/audit";
 import { getLibraryProduct, listCategories } from "@/features/products/queries";
 import { uuidSchema } from "@/schemas/product";
+import { isAdminViewer } from "@/lib/security/auth";
 
 export const metadata: Metadata = { title: "Edit product" };
 
@@ -17,6 +18,7 @@ export default async function EditProductPage({
   params,
   searchParams,
 }: PageProps<"/admin/products/[id]">) {
+  if (!(await isAdminViewer())) return null;
   const [{ id }, { created }] = await Promise.all([params, searchParams]);
   if (!uuidSchema.safeParse(id).success) notFound();
 

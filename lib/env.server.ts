@@ -1,5 +1,7 @@
 import "server-only";
 
+import { createHash } from "node:crypto";
+
 import { z } from "zod";
 
 // Server-only secrets. Read lazily so a missing secret fails the operation that
@@ -70,4 +72,13 @@ export function getResendEnv() {
     RESEND_API_BASE: process.env.RESEND_API_BASE || undefined,
   });
   return parsed.success ? parsed.data : null;
+}
+
+/**
+ * Key for hashing rate-limit subjects (IPs, emails), derived from an existing
+ * server secret so no extra variable is needed and raw values never reach the
+ * database. Not the service-role key itself.
+ */
+export function getRateLimitHashKey(): string {
+  return createHash("sha256").update(`samys-rate-limit:${getServerEnv().SUPABASE_SERVICE_ROLE_KEY}`).digest("hex");
 }

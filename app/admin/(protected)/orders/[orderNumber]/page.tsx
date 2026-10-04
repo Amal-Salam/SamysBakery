@@ -11,11 +11,13 @@ import { getAdminOrder } from "@/features/orders/admin";
 import { ORDER_STATUS_LABELS } from "@/features/orders/rules";
 import { formatNaira } from "@/features/weekly-menu/rules";
 import { formatLongDate } from "@/lib/utils/dates";
+import { isAdminViewer } from "@/lib/security/auth";
 
 export const metadata: Metadata = { title: "Order" };
 
 
 export default async function AdminOrderPage({ params }: PageProps<"/admin/orders/[orderNumber]">) {
+  if (!(await isAdminViewer())) return null;
   const { orderNumber } = await params;
   if (!/^SAM-\d{4,}$/.test(orderNumber)) notFound();
   const order = await getAdminOrder(orderNumber);

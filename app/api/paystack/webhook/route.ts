@@ -5,14 +5,30 @@ import { processPayment } from "@/features/payments/service";
 import { isOurReference } from "@/features/payments/rules";
 import { getPaystackEnv } from "@/lib/env.server";
 import { isValidPaystackSignature } from "@/lib/paystack/webhook";
+import { clientIpFrom, consumeRateLimits, RATE_LIMITS } from "@/lib/security/rate-limit";
 
 // POST /api/paystack/webhook — public, authenticated by Paystack's signature
 // (not by a user session). API contract §15–16.
 export const dynamic = "force-dynamic";
 
+/** Paystack events are a few KB; anything far larger is not from Paystack. */
+const MAX_BODY_BYTES = 256 * 1024;
+
 export async function POST(request: NextRequest) {
+  // 0. Cheap rejections before any work: per-IP rate limit and body size.
+  const ip = clientIpFrom(request.headers);
+  if (!(await consumeRateLimits([{ bucket: "paystack_webhook_ip", subject: ip, ...RATE_LIMITS.webhookPerIp }]))) {
+    return NextResponse.json({ received: false }, { status: 429 });
+  }
+  if (Number(request.headers.get("content-length") ?? 0) > MAX_BODY_BYTES) {
+    return NextResponse.json({ received: false }, { status: 413 });
+  }
+
   // 1. Raw body (the signature covers the exact bytes Paystack sent).
   const rawBody = await request.text();
+  if (Buffer.byteLength(rawBody, "utf8") > MAX_BODY_BYTES) {
+    return NextResponse.json({ received: false }, { status: 413 });
+  }
 
   // 2–3. Validate signature; reject before doing any work.
   const { PAYSTACK_SECRET_KEY } = getPaystackEnv();

@@ -896,6 +896,15 @@ export type Database = {
         }
         Returns: Json
       }
+      consume_public_rate_limit: {
+        Args: {
+          bucket: string
+          max_hits: number
+          subject: string
+          window_seconds: number
+        }
+        Returns: boolean
+      }
       consume_rate_limit: {
         Args: { bucket: string; max_hits: number; window_seconds: number }
         Returns: boolean

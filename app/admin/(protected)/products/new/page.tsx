@@ -3,10 +3,12 @@ import Link from "next/link";
 
 import { ProductForm } from "@/components/admin/products/product-form";
 import { listCategories } from "@/features/products/queries";
+import { isAdminViewer } from "@/lib/security/auth";
 
 export const metadata: Metadata = { title: "Add product" };
 
 export default async function NewProductPage() {
+  if (!(await isAdminViewer())) return null;
   const categories = await listCategories();
 
   return (

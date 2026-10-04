@@ -11,6 +11,7 @@ import type { AvailabilityStatus } from "@/features/inventory/rules";
 import { getCurrentAdminMenu } from "@/features/weekly-menu/queries";
 import { formatWeekRange } from "@/lib/utils/dates";
 import { cn } from "@/lib/utils";
+import { isAdminViewer } from "@/lib/security/auth";
 
 export const metadata: Metadata = { title: "Inventory" };
 
@@ -34,6 +35,7 @@ const timeFormat = new Intl.DateTimeFormat("en-GB", {
 });
 
 export default async function AdminInventoryPage() {
+  if (!(await isAdminViewer())) return null;
   const menu = await getCurrentAdminMenu();
   if (!menu) {
     return (

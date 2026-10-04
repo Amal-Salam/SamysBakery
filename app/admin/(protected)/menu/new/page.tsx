@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import { getCurrentAdminMenu } from "@/features/weekly-menu/queries";
 import { menuWeekStartFor, weekEndFor } from "@/features/weekly-menu/rules";
 import { formatWeekRange, lagosToday } from "@/lib/utils/dates";
+import { isAdminViewer } from "@/lib/security/auth";
 
 export const metadata: Metadata = { title: "Create New Week" };
 
 export default async function CreateWeekPage() {
+  if (!(await isAdminViewer())) return null;
   const current = await getCurrentAdminMenu();
   const weekStart = menuWeekStartFor(lagosToday());
 

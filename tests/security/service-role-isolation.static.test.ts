@@ -13,6 +13,7 @@ const SERVER_ONLY_MODULES = [
   "lib/supabase/server.ts",
   "lib/env.server.ts",
   "lib/security/auth.ts",
+  "lib/security/rate-limit.ts",
 ];
 const SERVER_ONLY_IMPORTS = ["@/lib/supabase/admin", "@/lib/env.server"];
 

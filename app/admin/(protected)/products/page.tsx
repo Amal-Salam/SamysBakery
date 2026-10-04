@@ -16,12 +16,14 @@ import {
 } from "@/components/ui/table";
 import { listCategories, listLibraryProducts } from "@/features/products/queries";
 import { productImageUrl } from "@/lib/supabase/storage";
+import { isAdminViewer } from "@/lib/security/auth";
 
 export const metadata: Metadata = { title: "Product Library" };
 
 export default async function ProductLibraryPage({
   searchParams,
 }: PageProps<"/admin/products">) {
+  if (!(await isAdminViewer())) return null;
   const [{ deleted }, products, categories] = await Promise.all([
     searchParams,
     listLibraryProducts(),

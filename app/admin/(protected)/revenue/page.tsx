@@ -14,6 +14,7 @@ import {
   type DateRange,
 } from "@/features/admin/rules";
 import { formatLongDate, formatWeekRange, lagosToday } from "@/lib/utils/dates";
+import { isAdminViewer } from "@/lib/security/auth";
 
 export const metadata: Metadata = { title: "Revenue" };
 
@@ -24,6 +25,7 @@ function rangeLabel(range: DateRange) {
 }
 
 export default async function AdminRevenuePage({ searchParams }: PageProps<"/admin/revenue">) {
+  if (!(await isAdminViewer())) return null;
   const period = parseRevenuePeriod((await searchParams).period);
   const range = revenuePeriodRange(period, lagosToday());
   const metrics = await getRevenueMetrics(range);

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { getAdminDashboard, type StockWarning } from "@/features/admin/dashboard";
 import { formatNaira } from "@/features/weekly-menu/rules";
 import { formatLongDate, formatWeekRange } from "@/lib/utils/dates";
+import { isAdminViewer } from "@/lib/security/auth";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
@@ -65,6 +66,7 @@ function StockList({ id, title, items, empty, describe }: {
 }
 
 export default async function AdminDashboardPage() {
+  if (!(await isAdminViewer())) return null;
   const dashboard = await getAdminDashboard();
   const activeToday = dashboard.todaysOrders.filter((order) => order.orderStatus !== "CANCELLED");
   const range = dashboard.revenueRange;

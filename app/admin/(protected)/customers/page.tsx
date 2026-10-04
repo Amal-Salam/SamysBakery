@@ -7,12 +7,14 @@ import { Label } from "@/components/ui/label";
 import { EmptyState } from "@/components/ui/states";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { listCustomers } from "@/features/customers/admin";
+import { isAdminViewer } from "@/lib/security/auth";
 
 export const metadata: Metadata = { title: "Customers" };
 
 const dateFormat = new Intl.DateTimeFormat("en-GB", { timeZone: "Africa/Lagos", day: "numeric", month: "short", year: "numeric" });
 
 export default async function AdminCustomersPage({ searchParams }: PageProps<"/admin/customers">) {
+  if (!(await isAdminViewer())) return null;
   const { q } = await searchParams;
   const search = typeof q === "string" ? q.trim().slice(0, 100) : "";
   const customers = await listCustomers(search || null);

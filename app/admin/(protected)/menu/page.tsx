@@ -19,10 +19,12 @@ import {
 } from "@/features/weekly-menu/queries";
 import { getOrderCutoff, getReservationTimeout } from "@/features/weekly-menu/service";
 import { formatWeekRange } from "@/lib/utils/dates";
+import { isAdminViewer } from "@/lib/security/auth";
 
 export const metadata: Metadata = { title: "Current Weekly Menu" };
 
 export default async function CurrentMenuPage({ searchParams }: PageProps<"/admin/menu">) {
+  if (!(await isAdminViewer())) return null;
   const [{ created }, menu, history, cutoff] = await Promise.all([
     searchParams,
     getCurrentAdminMenu(),
