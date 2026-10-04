@@ -3,7 +3,8 @@ import { router } from "expo-router";
 import { Fragment } from "react";
 import { Pressable, Text, View } from "react-native";
 
-import { DoodleBadge, OvenDrawing, PatternBand, RollingPinDrawing, WheatDivider, WheatDrawing } from "@/components/ornaments";
+import { DoodleBadge, OvenDrawing, RollingPinDrawing, WheatDivider, WheatDrawing } from "@/components/ornaments";
+import { GlassHeader } from "@/components/glass";
 import { Button, Notice, Screen, StateView } from "@/components/ui";
 import { availabilityText, formatNaira, formatWeekRange, groupByCategory } from "@/lib/format";
 import type { Menu, Product } from "@/lib/types";
@@ -51,7 +52,7 @@ export default function MenuScreen() {
 
   return (
     <Screen onRefresh={reload} refreshing={loading && menu !== null}>
-      <PatternBand>
+      <GlassHeader>
         <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: space.sm }}>
           <WheatDrawing size={36} />
           <Text style={type.display} accessibilityRole="header">
@@ -65,7 +66,7 @@ export default function MenuScreen() {
         <Text style={[type.small, { marginTop: space.xs }]}>
           A new selection of cakes, breads, and pastries, thoughtfully chosen for the week.
         </Text>
-      </PatternBand>
+      </GlassHeader>
 
       {error ? (
         <>

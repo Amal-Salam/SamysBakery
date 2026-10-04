@@ -5,8 +5,9 @@ import { Alert, Text, View } from "react-native";
 
 import { useAuth } from "@/auth/AuthProvider";
 import { useCart } from "@/cart/CartProvider";
-import { BasketDrawing, PatternBand, WheatDivider } from "@/components/ornaments";
+import { BasketDrawing, WheatDivider } from "@/components/ornaments";
 import { SignInPrompt } from "@/components/SignInPrompt";
+import { GlassHeader } from "@/components/glass";
 import { Button, Card, Notice, Screen, StateView, Stepper } from "@/components/ui";
 import { ApiError } from "@/lib/api";
 import { cartIssueMessage, formatNaira } from "@/lib/format";
@@ -91,14 +92,14 @@ export default function CartScreen() {
 
   return (
     <Screen onRefresh={refresh} refreshing={loading && cart !== null}>
-      <PatternBand>
+      <GlassHeader>
         <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
           <BasketDrawing width={46} height={38} />
           <Text style={type.display} accessibilityRole="header">
             Your Cart
           </Text>
         </View>
-      </PatternBand>
+      </GlassHeader>
       {error ? <Notice tone="error">{error}</Notice> : null}
       {message ? <Notice tone="error">{message}</Notice> : null}
 

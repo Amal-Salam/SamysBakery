@@ -14,6 +14,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { colors, fonts, radius, space, touchTarget, type } from "@/theme";
 
+import { useTabBarSpace } from "./glass";
+
 export function Screen({
   children,
   scroll = true,
@@ -27,11 +29,13 @@ export function Screen({
   refreshing?: boolean;
   edges?: ("top" | "left" | "right" | "bottom")[];
 }) {
+  const tabBarSpace = useTabBarSpace();
+  const bottom = tabBarSpace ? { paddingBottom: tabBarSpace + space.xl } : null;
   return (
     <SafeAreaView style={styles.safe} edges={edges}>
       {scroll ? (
         <ScrollView
-          contentContainerStyle={styles.content}
+          contentContainerStyle={[styles.content, bottom]}
           keyboardShouldPersistTaps="handled"
           refreshControl={
             onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} colors={[colors.primary]} /> : undefined
@@ -40,7 +44,7 @@ export function Screen({
           {children}
         </ScrollView>
       ) : (
-        <View style={[styles.content, { flex: 1 }]}>{children}</View>
+        <View style={[styles.content, { flex: 1 }, bottom]}>{children}</View>
       )}
     </SafeAreaView>
   );

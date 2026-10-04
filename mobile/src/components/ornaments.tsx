@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { StyleSheet, Text, View, type ViewStyle } from "react-native";
-import Svg, { Circle, Defs, G, Path, Pattern, Rect } from "react-native-svg";
+import Svg, { Circle, Path } from "react-native-svg";
 
 import { colors, fonts } from "@/theme";
 
@@ -107,30 +107,6 @@ export function WheatDivider({ style }: { style?: ViewStyle }) {
         <Path fill="none" stroke={colors.accent} strokeWidth={1} strokeLinecap="round" d="M0 9h20M10 9c-2-2-2-4-1-5M10 9c2-2 2-4 1-5M10 9c-2 2-2 4-1 5M10 9c2 2 2 4 1 5" />
       </Svg>
       <View style={{ flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: colors.border }} />
-    </View>
-  );
-}
-
-/** The faint wheat-sprig pattern behind a header band. */
-export function PatternBand({ children, style }: { children: ReactNode; style?: ViewStyle }) {
-  return (
-    <View style={[{ borderRadius: 12, overflow: "hidden" }, style]}>
-      <Svg style={StyleSheet.absoluteFill} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-        <Defs>
-          <Pattern id="wheat" width="72" height="72" patternUnits="userSpaceOnUse">
-            <G fill="none" stroke={colors.primary} strokeOpacity={0.14} strokeWidth={0.9} strokeLinecap="round">
-              <G transform="translate(14 10) rotate(-18)">
-                <Path d="M6 22V2M6 7c-3-1-4-3-4-5 2 0 4 2 4 5zM6 7c3-1 4-3 4-5-2 0-4 2-4 5zM6 12c-3-1-4-3-4-5 2 0 4 2 4 5zM6 12c3-1 4-3 4-5-2 0-4 2-4 5zM6 17c-3-1-4-3-4-5 2 0 4 2 4 5zM6 17c3-1 4-3 4-5-2 0-4 2-4 5z" />
-              </G>
-              <G transform="translate(50 46) rotate(-18)">
-                <Path d="M6 22V2M6 7c-3-1-4-3-4-5 2 0 4 2 4 5zM6 7c3-1 4-3 4-5-2 0-4 2-4 5zM6 12c-3-1-4-3-4-5 2 0 4 2 4 5zM6 12c3-1 4-3 4-5-2 0-4 2-4 5zM6 17c-3-1-4-3-4-5 2 0 4 2 4 5zM6 17c3-1 4-3 4-5-2 0-4 2-4 5z" />
-              </G>
-            </G>
-          </Pattern>
-        </Defs>
-        <Rect width="100%" height="100%" fill="url(#wheat)" />
-      </Svg>
-      <View style={{ padding: 20 }}>{children}</View>
     </View>
   );
 }

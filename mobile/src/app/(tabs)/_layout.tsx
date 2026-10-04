@@ -5,6 +5,7 @@ import type { ColorValue } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useCart } from "@/cart/CartProvider";
+import { GLASS, TabBarGlass, TabBarSpace } from "@/components/glass";
 import { colors, fonts } from "@/theme";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
@@ -21,20 +22,31 @@ export default function TabsLayout() {
   const { cart } = useCart();
   const insets = useSafeAreaInsets();
   const count = cart?.itemCount ?? 0;
+  const barHeight = 58 + insets.bottom;
   return (
+    <TabBarSpace.Provider value={barHeight}>
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
         // Height follows the phone's own navigation area (Android draws edge to edge).
+        // Frosted bar floating over the content (owner-approved "soft glass").
         tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-          height: 58 + insets.bottom,
+          position: "absolute",
+          backgroundColor: GLASS.bar,
+          borderTopColor: GLASS.edge,
+          borderTopWidth: 1,
+          elevation: 0,
+          shadowColor: colors.primary,
+          shadowOpacity: 0.06,
+          shadowRadius: 18,
+          shadowOffset: { width: 0, height: -6 },
+          height: barHeight,
           paddingTop: 6,
           paddingBottom: Math.max(insets.bottom, 6),
         },
+        tabBarBackground: TabBarGlass,
         tabBarLabelStyle: { fontFamily: fonts.bodyMedium, fontSize: 12 },
         tabBarBadgeStyle: { backgroundColor: colors.accent, fontFamily: fonts.bodySemibold },
       }}
@@ -52,5 +64,6 @@ export default function TabsLayout() {
       <Tabs.Screen name="orders" options={{ title: "Orders", tabBarIcon: tabIcon("receipt") }} />
       <Tabs.Screen name="account" options={{ title: "Account", tabBarIcon: tabIcon("person") }} />
     </Tabs>
+    </TabBarSpace.Provider>
   );
 }
