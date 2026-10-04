@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { CartDrawer } from "@/components/cart/cart-drawer";
+import { CartLiveSync } from "@/components/cart/cart-live-sync";
 import { getCart } from "@/features/cart/service";
 import { getCurrentUser } from "@/lib/security/auth";
 
@@ -23,7 +24,7 @@ export async function SiteHeader() {
           href="/"
           className="font-heading text-heading-3 font-semibold whitespace-nowrap text-primary sm:text-heading-2"
         >
-          Samy&apos;s Bakery
+          Samy&apos;s Bakery 
         </Link>
         <nav aria-label="Main">
           <ul className="flex items-center gap-1 sm:gap-4">
@@ -39,6 +40,7 @@ export async function SiteHeader() {
             ))}
             <li>
               <CartDrawer cart={cart} />
+              {user ? <CartLiveSync userId={user.id} /> : null}
             </li>
           </ul>
         </nav>
