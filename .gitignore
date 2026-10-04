@@ -49,3 +49,6 @@ next-env.d.ts
 # local backup of the wiped v1 schema data (never commit)
 /.v1-backup/
 /tests/e2e/.storefront-fixture.json
+
+#docs folder
+/docs

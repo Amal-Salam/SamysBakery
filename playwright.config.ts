@@ -3,7 +3,7 @@ import { defineConfig, devices } from "@playwright/test";
 import { getLocalSupabaseEnv } from "./scripts/local-supabase-env.mjs";
 
 const PORT = 3100;
-const MENU_SLOT_TESTS = [/admin-weekly-menu\.spec\.ts/, /storefront\.(setup|teardown|spec)\.ts/, /cart\.spec\.ts/, /checkout\.spec\.ts/, /payment\.spec\.ts/];
+const MENU_SLOT_TESTS = [/admin-weekly-menu\.spec\.ts/, /storefront\.(setup|teardown|spec)\.ts/, /cart\.spec\.ts/, /checkout\.spec\.ts/, /payment\.spec\.ts/, /customer-journey\.spec\.ts/, /admin-journey\.spec\.ts/];
 const baseURL = `http://localhost:${PORT}`;
 
 // E2E runs against the local Supabase stack so test data never reaches the
@@ -47,22 +47,28 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
     {
+      name: "admin-journey",
+      testMatch: /admin-journey\.spec\.ts/,
+      dependencies: ["admin-menu"],
+      use: { ...devices["Desktop Chrome"] },
+    },
+    {
       name: "storefront-setup",
       testMatch: /storefront\.setup\.ts/,
-      dependencies: ["admin-menu"],
+      dependencies: ["admin-journey"],
       teardown: "storefront-teardown",
       use: { ...devices["Desktop Chrome"] },
     },
     { name: "storefront-teardown", testMatch: /storefront\.teardown\.ts/ },
     {
       name: "storefront-desktop",
-      testMatch: /(storefront|cart|checkout|payment)\.spec\.ts/,
+      testMatch: /(storefront|cart|checkout|payment|customer-journey)\.spec\.ts/,
       dependencies: ["storefront-setup"],
       use: { ...devices["Desktop Chrome"] },
     },
     {
       name: "storefront-mobile",
-      testMatch: /(storefront|cart|checkout|payment)\.spec\.ts/,
+      testMatch: /(storefront|cart|checkout|payment|customer-journey)\.spec\.ts/,
       dependencies: ["storefront-setup"],
       use: { ...devices["Pixel 7"] },
     },

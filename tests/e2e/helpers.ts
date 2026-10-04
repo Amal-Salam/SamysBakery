@@ -85,3 +85,22 @@ export async function clearActiveMenus() {
       .eq("id", menu.id);
   }
 }
+
+/** Local Supabase captures auth emails (verification, password reset) in Mailpit. */
+const MAILPIT = "http://127.0.0.1:54324";
+
+/** Polls the local mail catcher for the newest Supabase auth link sent to `to`. */
+export async function latestAuthLink(to: string, timeoutMs = 20_000): Promise<string> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const search = await fetch(`${MAILPIT}/api/v1/search?query=${encodeURIComponent(`to:"${to}"`)}`);
+    const { messages } = (await search.json()) as { messages: { ID: string }[] };
+    if (messages.length > 0) {
+      const message = (await (await fetch(`${MAILPIT}/api/v1/message/${messages[0].ID}`)).json()) as { HTML: string; Text: string };
+      const match = `${message.HTML}\n${message.Text}`.match(/https?:\/\/[^\s"'<>]+\/auth\/v1\/verify\?[^\s"'<>]+/);
+      if (match) return match[0].replaceAll("&amp;", "&");
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  throw new Error("No auth email arrived");
+}

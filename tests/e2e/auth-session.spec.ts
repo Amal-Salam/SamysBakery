@@ -3,6 +3,8 @@ import { randomUUID } from "node:crypto";
 import { expect, test, type Page } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
 
+import { latestAuthLink } from "./helpers";
+
 // Signed-in journeys against the local Supabase stack (see playwright.config.ts).
 // Creates pre-confirmed throwaway users (@example.com — no email is sent).
 
@@ -125,4 +127,34 @@ test("admin signs in to the admin area and signs out", async ({ page }) => {
   await expect(page).toHaveURL("/");
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/admin\/login/);
+});
+
+test("password reset through the emailed link", async ({ page }) => {
+  const account = await createAccount("Forgetful Customer", "CUSTOMER");
+  const newPassword = `new-${account.password}`;
+
+  await page.goto("/login");
+  await page.getByRole("link", { name: "Forgot your password?" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Reset your password" })).toBeVisible();
+  await page.getByLabel("Email").fill(account.email);
+  await page.getByRole("button", { name: "Send reset link" }).click();
+  await expect(page.getByText("If an account exists for that email")).toBeVisible();
+
+  // The emailed link opens a recovery session on the update-password page.
+  await page.goto(await latestAuthLink(account.email));
+  await expect(page).toHaveURL("/update-password");
+  await page.getByLabel("New password", { exact: true }).fill(newPassword);
+  await page.getByLabel("Confirm new password").fill(newPassword);
+  await page.getByRole("button", { name: "Update password" }).click();
+  await expect(page.getByText("Your password has been updated.")).toBeVisible();
+
+  // Old password no longer works; the new one does.
+  await page.context().clearCookies();
+  await page.goto("/login");
+  await expect(page.getByRole("heading", { level: 1, name: "Sign in" })).toBeVisible();
+  await signIn(page, account);
+  await expect(page.getByRole("alert").filter({ hasText: "Incorrect email or password." })).toBeVisible();
+  await signIn(page, { ...account, password: newPassword });
+  await expect(page).toHaveURL("/");
+  await deleteAccount(account);
 });
