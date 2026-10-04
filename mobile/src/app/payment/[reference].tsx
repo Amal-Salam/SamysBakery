@@ -77,8 +77,8 @@ export default function PaymentScreen() {
         <Text style={[type.body, { textAlign: "center" }]}>
           Thank you! Your payment was received and your order is with the bakery.
         </Text>
-        <Button label="View order" onPress={() => router.replace({ pathname: "/order/[orderNumber]", params: { orderNumber: result.orderNumber } })} />
-        <Button label="Continue Browsing" variant="outline" onPress={() => router.navigate("/")} />
+        <Button label="View order" onPress={() => router.replace({ pathname: "/orders/[orderNumber]", params: { orderNumber: result.orderNumber } })} />
+        <Button label="Continue Browsing" variant="outline" onPress={() => router.navigate("/menu")} />
       </Screen>
     );
   }

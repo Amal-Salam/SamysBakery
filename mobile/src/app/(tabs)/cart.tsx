@@ -108,7 +108,7 @@ export default function CartScreen() {
         <StateView
           illustration={<BasketDrawing />}
           title="Your cart is empty."
-          action={<Button label="View This Week's Menu" onPress={() => router.navigate("/")} />}
+          action={<Button label="View This Week's Menu" onPress={() => router.navigate("/menu")} />}
         />
       ) : (
         <>

@@ -38,7 +38,7 @@ export default function OrdersScreen() {
         <StateView
           illustration={<LoafDrawing size={64} />}
           title="You haven't placed any orders yet."
-          action={<Button label="View This Week's Menu" onPress={() => router.navigate("/")} />}
+          action={<Button label="View This Week's Menu" onPress={() => router.navigate("/menu")} />}
         />
       ) : (
         orders.map((order) => (
@@ -46,7 +46,7 @@ export default function OrdersScreen() {
             key={order.orderNumber}
             accessibilityRole="button"
             accessibilityLabel={`${order.orderNumber}, ${formatNaira(order.subtotal)}, delivery ${formatLongDate(order.deliveryDate)}`}
-            onPress={() => router.push({ pathname: "/order/[orderNumber]", params: { orderNumber: order.orderNumber } })}
+            onPress={() => router.push({ pathname: "/orders/[orderNumber]", params: { orderNumber: order.orderNumber } })}
           >
             <Card>
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>

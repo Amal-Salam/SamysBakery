@@ -18,7 +18,7 @@ export default function SignInScreen() {
   useEffect(() => {
     if (status === "signedIn") {
       if (router.canGoBack()) router.back();
-      else router.replace("/");
+      else router.replace("/menu");
     }
   }, [status]);
 

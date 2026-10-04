@@ -32,7 +32,7 @@ export default function ProductScreen() {
         <StateView
           illustration={<LoafDrawing size={64} />}
           title="This product isn't on this week's menu."
-          action={<Button label="Back to Weekly Menu" variant="outline" onPress={() => router.navigate("/")} />}
+          action={<Button label="Back to Weekly Menu" variant="outline" onPress={() => router.navigate("/menu")} />}
         />
       </Screen>
     );

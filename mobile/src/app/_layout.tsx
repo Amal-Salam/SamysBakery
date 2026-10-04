@@ -40,10 +40,8 @@ export default function RootLayout() {
           }}
         >
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="product/[slug]" options={{ title: "" }} />
           <Stack.Screen name="checkout" options={{ title: "Checkout" }} />
           <Stack.Screen name="payment/[reference]" options={{ title: "Payment", headerBackVisible: false, gestureEnabled: false }} />
-          <Stack.Screen name="order/[orderNumber]" options={{ title: "Order" }} />
           <Stack.Screen name="sign-in" options={{ title: "", presentation: "modal" }} />
         </Stack>
       </CartProvider>

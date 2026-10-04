@@ -18,7 +18,7 @@ function ProductCard({ product }: { product: Product }) {
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`${product.name}, ${formatNaira(product.price)}, ${availability}`}
-      onPress={() => router.push(`/product/${product.slug}`)}
+      onPress={() => router.push(`/menu/${product.slug}`)}
       style={({ pressed }) => ({ gap: space.sm, opacity: pressed ? 0.9 : 1 })}
     >
       {product.image ? (
