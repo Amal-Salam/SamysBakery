@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
+import { Fragment, Suspense } from "react";
 
 import { DoodleBadge } from "@/components/brand/doodle-badge";
-import { OvenDrawing, RollingPinDrawing, WheatDrawing } from "@/components/brand/ornaments";
+import { OvenDrawing, RollingPinDrawing, WheatDivider, WheatDrawing } from "@/components/brand/ornaments";
 import { ProductGrid } from "@/components/storefront/product-card";
 import { EmptyState, LoadingState } from "@/components/ui/states";
 import { groupByCategory } from "@/features/weekly-menu/rules";
@@ -55,22 +55,24 @@ async function MenuContent() {
         />
       ) : (
         groups.map((group, index) => (
-          <section
-            key={group.name ?? "uncategorized"}
-            aria-labelledby={showHeadings ? `category-${index}` : undefined}
-            aria-label={showHeadings ? undefined : "Products"}
-            className="flex flex-col gap-6"
-          >
-            {showHeadings ? (
-              <div className="flex items-center gap-3">
-                <RollingPinDrawing className="size-9 text-primary" />
-                <h2 id={`category-${index}`} className="text-heading-1 text-primary">
-                  {group.name ?? "Also this week"}
-                </h2>
-              </div>
-            ) : null}
-            <ProductGrid products={group.products} prioritizeFirst={index === 0} />
-          </section>
+          <Fragment key={group.name ?? "uncategorized"}>
+            {index > 0 ? <WheatDivider /> : null}
+            <section
+              aria-labelledby={showHeadings ? `category-${index}` : undefined}
+              aria-label={showHeadings ? undefined : "Products"}
+              className="flex flex-col gap-6"
+            >
+              {showHeadings ? (
+                <div className="flex items-center gap-3">
+                  <RollingPinDrawing className="size-9 text-primary" />
+                  <h2 id={`category-${index}`} className="text-heading-1 text-primary">
+                    {group.name ?? "Also this week"}
+                  </h2>
+                </div>
+              ) : null}
+              <ProductGrid products={group.products} prioritizeFirst={index === 0} />
+            </section>
+          </Fragment>
         ))
       )}
     </>
