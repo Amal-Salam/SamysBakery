@@ -67,7 +67,15 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/order
           <dl className="grid gap-2 text-body-sm">
             <div>
               <dt className="text-muted-foreground">Customer</dt>
-              <dd className="font-medium">{order.customerName}</dd>
+              <dd className="font-medium">
+                {order.customerId ? (
+                  <Link href={`/admin/customers/${order.customerId}`} className="text-accent underline underline-offset-4">
+                    {order.customerName}
+                  </Link>
+                ) : (
+                  order.customerName
+                )}
+              </dd>
             </div>
             <div>
               <dt className="text-muted-foreground">Email</dt>

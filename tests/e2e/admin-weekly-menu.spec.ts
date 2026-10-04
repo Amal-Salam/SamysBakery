@@ -219,3 +219,54 @@ test("admin changes the ordering cutoff (audited)", async ({ page }) => {
   await expect(section.getByRole("status").filter({ hasText: "Ordering cutoff saved." })).toBeVisible();
 });
 
+
+test("admin sees low stock, adds stock with a reason, and it's recorded", async ({ page }) => {
+  // 18 of the 20 sourdough are in a confirmed order → 2 left, at/below the alert of 3.
+  const customer = await createAccount("E2E Stock Customer");
+  const { data: wmp } = await service.from("weekly_menu_products").select("id").eq("name_snapshot", sourdough).single();
+  const { data: order } = await service
+    .from("orders")
+    .insert({
+      user_id: customer.id, delivery_date: "2030-01-03", recipient_name: "Stock", phone: "0803", email: customer.email,
+      delivery_address: "1 Oven Lane", delivery_city: "Abuja", delivery_state: "FCT", subtotal: 117000,
+      paid_at: new Date().toISOString(),
+    } as never)
+    .select("id")
+    .single();
+  await service.from("inventory_reservations").insert({
+    weekly_menu_product_id: wmp!.id, order_id: order!.id, quantity: 18, reservation_type: "ORDER_CONFIRMED",
+  });
+
+  await signInAsAdmin(page, admin);
+  await expect(page.getByRole("region", { name: /^Low stock/ }).getByText(sourdough)).toBeVisible();
+
+  await page.goto("/admin/inventory");
+  await expect(page.getByRole("heading", { level: 1, name: "Inventory" })).toBeVisible();
+  const row = page.getByRole("row").filter({ hasText: sourdough });
+  await expect(row.getByRole("cell")).toHaveText([sourdough, "20", "0", "0", "18", "2", "3", "Low stock"]);
+
+  const form = page.getByRole("region", { name: "Add stock" });
+  await form.getByLabel("Product").selectOption({ label: `${sourdough} (2 available)` });
+  await form.getByLabel("Quantity to add").fill("0");
+  await form.getByRole("button", { name: "Add stock" }).click();
+  await expect(form.getByText("Enter a quantity of at least 1.")).toBeVisible();
+
+  await form.getByLabel("Quantity to add").fill("5");
+  await expect(form.getByText(`${sourdough}: 2 available now → 7 after adding 5.`)).toBeVisible();
+  await form.getByLabel("Reason").fill("Extra batch from the second oven");
+  await form.getByRole("button", { name: "Add stock" }).click();
+  await expect(form.getByRole("status").filter({ hasText: "Added 5. Now available: 7." })).toBeVisible();
+
+  await expect(row.getByRole("cell")).toHaveText([sourdough, "20", "5", "0", "18", "7", "3", "Available"]);
+  const history = page.getByRole("region", { name: "Stock history" });
+  await expect(history.getByText(`+5 ${sourdough} by E2E Menu Admin`)).toBeVisible();
+  await expect(history.getByText("Reason: Extra batch from the second oven")).toBeVisible();
+
+  const { data: audit } = await service
+    .from("audit_logs")
+    .select("metadata")
+    .eq("action", "INVENTORY_INCREASED")
+    .eq("actor_user_id", admin.id)
+    .single();
+  expect(audit?.metadata).toMatchObject({ quantity: 5, available_before: 2, available_after: 7 });
+});

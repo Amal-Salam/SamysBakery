@@ -25,7 +25,7 @@ export const ORDER_VIEWS = ["today", "upcoming", "preparing", "ready"] as const;
 export type OrderView = (typeof ORDER_VIEWS)[number];
 
 export async function listAdminOrders(
-  filters: { status?: OrderStatus; view?: OrderView; limit?: number } = {}
+  filters: { status?: OrderStatus; view?: OrderView; orderNumber?: string; deliveryDate?: string; limit?: number } = {}
 ): Promise<AdminOrderSummary[]> {
   const supabase = await createSupabaseServerClient();
   const today = lagosToday();
@@ -33,6 +33,8 @@ export async function listAdminOrders(
     .from("orders")
     .select("order_number, recipient_name, delivery_date, subtotal, payment_status, order_status, created_at");
   if (filters.status) query = query.eq("order_status", filters.status);
+  if (filters.orderNumber) query = query.eq("order_number", filters.orderNumber);
+  if (filters.deliveryDate) query = query.eq("delivery_date", filters.deliveryDate);
   if (filters.view === "today") query = query.eq("delivery_date", today);
   if (filters.view === "upcoming") {
     query = query.gt("delivery_date", today).not("order_status", "in", `(${CLOSED_STATUSES.join(",")})`);
@@ -58,6 +60,8 @@ export async function listAdminOrders(
 
 export type AdminOrderDetail = AdminOrderSummary & {
   id: string;
+  /** null once the customer deleted their account. */
+  customerId: string | null;
   email: string;
   phone: string;
   address: string;
@@ -80,7 +84,7 @@ export async function getAdminOrder(orderNumber: string): Promise<AdminOrderDeta
   const { data: order, error } = await supabase
     .from("orders")
     .select(
-      `id, order_number, recipient_name, email, phone, delivery_address, delivery_city, delivery_state,
+      `id, user_id, order_number, recipient_name, email, phone, delivery_address, delivery_city, delivery_state,
        delivery_additional_info, special_notes, delivery_date, subtotal, payment_status, order_status,
        created_at, paid_at, order_items ( id, product_name, quantity, unit_price, line_total ),
        refunds ( status, provider_status, amount, requested_at, processed_at )`
@@ -100,6 +104,7 @@ export async function getAdminOrder(orderNumber: string): Promise<AdminOrderDeta
 
   return {
     id: order.id,
+    customerId: order.user_id,
     orderNumber: order.order_number,
     customerName: order.recipient_name,
     email: order.email,

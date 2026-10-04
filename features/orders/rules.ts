@@ -44,3 +44,12 @@ export function moveKind(current: OrderStatus, next: OrderStatus): StatusMove["k
 export function isCancellable(status: OrderStatus): boolean {
   return status === "PAID" || status === "RECEIVED" || status === "BAKING";
 }
+
+/**
+ * Admin order search input → canonical order number, or null if it can't be
+ * one. Accepts "SAM-1001", "sam 1001", "#1001" or just "1001".
+ */
+export function normalizeOrderNumberQuery(input: string): string | null {
+  const match = input.trim().match(/^#?(?:sam[\s-]*)?(\d{4,9})$/i);
+  return match ? `SAM-${match[1]}` : null;
+}

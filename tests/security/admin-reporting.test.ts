@@ -2,7 +2,8 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { anonClient, createTestUser, deleteTestUsers, serviceClient, type TestUser } from "./helpers";
 
-// Revenue metrics are admin data (Milestone 15): visitors and customers are refused.
+// Revenue, inventory and customer lookup are admin data (Milestones 15–16):
+// visitors and customers are refused over the real API.
 
 let customer: TestUser;
 let admin: TestUser;
@@ -45,5 +46,32 @@ describe("revenue metrics authorization", () => {
       products_sold: 0,
       products: [],
     });
+  });
+});
+
+describe("admin operations authorization", () => {
+  const calls = [
+    ["get_menu_inventory", { target_menu_id: "00000000-0000-0000-0000-000000000000" }],
+    ["admin_list_customers", {}],
+    ["admin_get_customer", { target_user_id: "00000000-0000-0000-0000-000000000000" }],
+    ["add_inventory", { target_weekly_menu_product_id: "00000000-0000-0000-0000-000000000000", quantity: 1, reason: "x" }],
+  ] as const;
+
+  it.each(calls)("visitors cannot call %s", async (fn, args) => {
+    const { data, error } = await anonClient().rpc(fn as never, args as never);
+    expect(error?.code).toBe("42501");
+    expect(data).toBeNull();
+  });
+
+  it.each(calls)("customers cannot call %s", async (fn, args) => {
+    const { data, error } = await customer.client.rpc(fn as never, args as never);
+    expect(error?.code).toBe("42501");
+    expect(data).toBeNull();
+  });
+
+  it("customers cannot read other customers' emails; admins can look them up", async () => {
+    const { data, error } = await admin.client.rpc("admin_get_customer", { target_user_id: customer.id });
+    expect(error).toBeNull();
+    expect(data?.[0]?.email).toBe(customer.email);
   });
 });

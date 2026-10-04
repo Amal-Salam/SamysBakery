@@ -838,6 +838,29 @@ export type Database = {
         }
         Returns: number
       }
+      admin_get_customer: {
+        Args: { target_user_id: string }
+        Returns: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          phone: string
+        }[]
+      }
+      admin_list_customers: {
+        Args: { max_rows?: number; search?: string }
+        Returns: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          last_order_at: string
+          last_order_number: string
+          order_count: number
+          phone: string
+        }[]
+      }
       apply_refund_status: {
         Args: { reported_status: string; target_refund_id: string }
         Returns: string
@@ -892,6 +915,20 @@ export type Database = {
         Returns: undefined
       }
       generate_order_number: { Args: never; Returns: string }
+      get_menu_inventory: {
+        Args: { target_menu_id: string }
+        Returns: {
+          added_quantity: number
+          availability_status: string
+          available_quantity: number
+          low_stock_threshold: number
+          name: string
+          reserved_confirmed: number
+          reserved_pending: number
+          weekly_menu_product_id: string
+          weekly_quantity: number
+        }[]
+      }
       get_published_menu_availability: {
         Args: never
         Returns: {

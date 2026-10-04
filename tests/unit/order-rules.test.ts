@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { allowedStatusMoves, isCancellable, moveKind } from "@/features/orders/rules";
+import { allowedStatusMoves, isCancellable, moveKind, normalizeOrderNumberQuery } from "@/features/orders/rules";
 
 describe("allowedStatusMoves (owner-decided matrix)", () => {
   it("from PAID: every later status, no correction", () => {
@@ -52,5 +52,22 @@ describe("isCancellable (only before READY)", () => {
     ["CANCELLED", false],
   ] as const)("%s → %s", (status, expected) => {
     expect(isCancellable(status)).toBe(expected);
+  });
+});
+
+describe("normalizeOrderNumberQuery", () => {
+  it.each([
+    ["SAM-1001", "SAM-1001"],
+    ["sam-1001", "SAM-1001"],
+    [" sam 1042 ", "SAM-1042"],
+    ["#1001", "SAM-1001"],
+    ["1001", "SAM-1001"],
+    ["SAM-123456", "SAM-123456"],
+  ])("%s → %s", (input, expected) => {
+    expect(normalizeOrderNumberQuery(input)).toBe(expected);
+  });
+
+  it.each(["", "SAM-", "12", "SAM-10a1", "1001; drop", "ORD-1001", "1".repeat(12)])("rejects %j", (input) => {
+    expect(normalizeOrderNumberQuery(input)).toBeNull();
   });
 });
