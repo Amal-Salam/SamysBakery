@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "Samy's Bakery",
+    "slug": "samys-bakery",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": false
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#F8F3EA",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.samysbakery.app",
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.SYSTEM_ALERT_WINDOW"
+      ],
+      "allowBackup": false
+    },
+    "plugins": [
+      "expo-router",
+      "expo-status-bar",
+      "expo-secure-store",
+      "expo-font",
+      "expo-web-browser",
+      "expo-image",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F8F3EA",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 160
+        }
+      ]
+    ],
+    "scheme": "samysbakery",
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
