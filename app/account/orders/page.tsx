@@ -13,7 +13,10 @@ export default async function MyOrdersPage() {
   const orders = await listMyOrders();
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-heading-1 text-primary">Your orders</h1>
+      <div className="flex items-center gap-3">
+        <LoafDrawing className="size-9 text-primary" />
+        <h1 className="text-heading-1 text-primary">Your orders</h1>
+      </div>
       {orders.length === 0 ? (
         <EmptyState
           illustration={<LoafDrawing className="size-16" />}

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { BasketDrawing } from "@/components/brand/ornaments";
+import { BasketDrawing, PatternHeader } from "@/components/brand/ornaments";
 import { clearCartAction } from "@/actions/cart";
 import { CartLine } from "@/components/cart/cart-line";
 import { CartNoticeBanner } from "@/components/cart/cart-notice";
@@ -18,7 +18,12 @@ export default async function CartPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-10 sm:px-6 md:py-14">
-      <h1 className="text-display-l text-primary">Your Cart</h1>
+      <PatternHeader>
+        <div className="flex items-center gap-3">
+          <BasketDrawing className="h-10 w-12 text-primary md:h-12 md:w-14" />
+          <h1 className="text-display-l text-primary">Your Cart</h1>
+        </div>
+      </PatternHeader>
       <CartNoticeBanner notice={notice} />
 
       {cart.items.length === 0 ? (

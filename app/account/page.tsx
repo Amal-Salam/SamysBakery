@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { LoafDrawing } from "@/components/brand/ornaments";
+import { LoafDrawing, WheatDivider, WheatDrawing } from "@/components/brand/ornaments";
 import { signOut } from "@/actions/auth";
 import { OrderList } from "@/components/account/order-list";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,10 @@ export default async function AccountPage() {
     <div className="flex flex-col gap-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="text-heading-1 text-primary">{user.fullName ? `Hello, ${user.fullName}` : "Your account"}</h1>
+          <div className="flex items-center gap-3">
+            <WheatDrawing className="size-9 text-primary" />
+            <h1 className="text-heading-1 text-primary">{user.fullName ? `Hello, ${user.fullName}` : "Your account"}</h1>
+          </div>
           <p className="text-body-sm text-muted-foreground break-all">{user.email}</p>
         </div>
         <form action={signOut}>
@@ -29,6 +32,7 @@ export default async function AccountPage() {
         </form>
       </div>
 
+      <WheatDivider />
       <section aria-labelledby="recent-heading" className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-3">
           <h2 id="recent-heading" className="text-heading-2 text-primary">

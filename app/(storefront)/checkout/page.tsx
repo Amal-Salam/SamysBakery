@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { BasketDrawing, OvenDrawing } from "@/components/brand/ornaments";
+import { BasketDrawing, OvenDrawing, PatternHeader } from "@/components/brand/ornaments";
 import { CheckoutFlow } from "@/components/checkout/checkout-flow";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/states";
@@ -19,7 +19,12 @@ export default async function CheckoutPage({ searchParams }: PageProps<"/checkou
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-10 sm:px-6 md:py-14">
-      <h1 className="text-display-l text-primary">Checkout</h1>
+      <PatternHeader>
+        <div className="flex items-center gap-3">
+          <BasketDrawing className="h-10 w-12 text-primary md:h-12 md:w-14" />
+          <h1 className="text-display-l text-primary">Checkout</h1>
+        </div>
+      </PatternHeader>
       {payment === "failed" ? (
         <p role="alert" className="rounded-md bg-destructive/10 px-4 py-3 text-body-sm text-destructive">
           Payment was not completed. You can try again.

@@ -119,3 +119,8 @@ export function WheatDivider({ className }: { className?: string }) {
     </div>
   );
 }
+
+/** A soft wheat-pattern band behind a page heading (decorative backdrop only). */
+export function PatternHeader({ className, children }: { className?: string; children: React.ReactNode }) {
+  return <div className={cn("pattern-wheat overflow-hidden rounded-xl px-5 py-6 sm:px-7 sm:py-8", className)}>{children}</div>;
+}

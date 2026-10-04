@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { WhiskDrawing } from "@/components/brand/ornaments";
+
 export default function AuthLayout({ children }: LayoutProps<"/">) {
   return (
     <div className="flex flex-1 flex-col">
@@ -13,12 +15,17 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
           </Link>
         </div>
       </header>
-      <main
-        id="main-content"
-        className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-4 py-10 sm:py-16"
-      >
-        {children}
-      </main>
+      <div className="pattern-wheat flex flex-1 flex-col">
+        <main
+          id="main-content"
+          className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 py-10 sm:py-16"
+        >
+          <div className="flex flex-col gap-6 rounded-xl border border-border bg-surface p-6 shadow-sm sm:p-8">
+            <WhiskDrawing className="size-10 text-primary" />
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

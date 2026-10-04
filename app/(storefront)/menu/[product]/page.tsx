@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 
+import { WheatDivider } from "@/components/brand/ornaments";
 import { AddToCartForm } from "@/components/cart/add-to-cart-form";
 import { AvailabilityBadge } from "@/components/storefront/availability-badge";
 import { ProductImage } from "@/components/storefront/product-image";
@@ -57,6 +58,7 @@ export default async function ProductPage({ params }: PageProps<"/menu/[product]
 
         <AddToCartForm productId={product.id} available={product.availableQuantity} soldOut={soldOut} />
 
+        {product.ingredients ? <WheatDivider /> : null}
         {product.ingredients ? (
           <details className="rounded-lg border border-border bg-surface">
             <summary className="flex min-h-12 cursor-pointer items-center px-4 font-medium">Ingredients</summary>

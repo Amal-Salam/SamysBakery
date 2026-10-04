@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { DoodleBadge } from "@/components/brand/doodle-badge";
+import { LoafDrawing, PatternHeader } from "@/components/brand/ornaments";
 import { Button } from "@/components/ui/button";
 import { formatNaira } from "@/features/weekly-menu/rules";
 import { requireUser } from "@/lib/security/auth";
@@ -32,17 +34,24 @@ export default async function OrderConfirmationPage({ params }: PageProps<"/orde
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-12 sm:px-6 md:py-16">
-      <div className="flex flex-col items-start gap-3">
+      <PatternHeader className="flex flex-col items-start gap-3">
         <CircleCheck className="size-12 text-success" aria-hidden="true" />
-        <h1 className="text-display-l text-primary">Order Confirmed</h1>
-        <p className="font-heading text-heading-2">{order.order_number}</p>
+        <div className="flex flex-wrap items-center gap-3">
+          <LoafDrawing className="size-10 text-primary md:size-12" />
+          <h1 className="text-display-l text-primary">Order Confirmed</h1>
+        </div>
+        <p className="font-heading text-heading-2">
+          <DoodleBadge tone="accent" shape="oval" className="px-6 py-2 text-heading-2">
+            {order.order_number}
+          </DoodleBadge>
+        </p>
         <p className="text-body-lg text-muted-foreground">
           Thank you! Your payment was received and your order is with the bakery.
         </p>
         <p className="text-body-sm text-muted-foreground">
           A confirmation email is on its way to <strong className="text-foreground">{order.email}</strong>.
         </p>
-      </div>
+      </PatternHeader>
 
       <section aria-labelledby="items-heading" className="flex flex-col gap-3">
         <h2 id="items-heading" className="text-heading-3 text-primary">

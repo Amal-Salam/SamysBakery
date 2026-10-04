@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { LoafDrawing } from "@/components/brand/ornaments";
 import { cancelMyOrderAction } from "@/actions/orders";
 import { ConfirmActionDialog } from "@/components/admin/confirm-action-dialog";
 import { OrderStatusBadge, PaymentStatusBadge } from "@/components/admin/orders/order-status-badge";
@@ -25,6 +26,7 @@ export default async function MyOrderPage({ params }: PageProps<"/account/orders
         ← Your orders
       </Link>
       <div className="flex flex-wrap items-center gap-3">
+        <LoafDrawing className="size-9 text-primary" />
         <h1 className="text-heading-1 text-primary">{order.orderNumber}</h1>
         <OrderStatusBadge status={order.orderStatus} />
       </div>
