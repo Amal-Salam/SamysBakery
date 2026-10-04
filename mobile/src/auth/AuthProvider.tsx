@@ -12,6 +12,8 @@ type AuthState = {
   me: Me | null;
   signIn: (email: string, password: string) => Promise<string | null>;
   signOut: () => Promise<void>;
+  /** Replace the cached profile after the customer edits it. */
+  updateMe: (me: Me) => void;
 };
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -72,9 +74,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut({ scope: "local" });
   }, []);
 
+  const updateMe = useCallback((next: Me) => setProfile({ userId: next.id, me: next }), []);
+
   const value = useMemo<AuthState>(
-    () => ({ status: loading ? "loading" : session ? "signedIn" : "signedOut", session, me, signIn, signOut }),
-    [loading, session, me, signIn, signOut]
+    () => ({ status: loading ? "loading" : session ? "signedIn" : "signedOut", session, me, signIn, signOut, updateMe }),
+    [loading, session, me, signIn, signOut, updateMe]
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

@@ -9,7 +9,6 @@ import { api, ApiError } from "@/lib/api";
 import { DELIVERY_FEE_NOTE, formatDeliveryDate, formatLongDate, formatNaira } from "@/lib/format";
 import type { CheckoutContext, CheckoutSummary } from "@/lib/types";
 import { useApi } from "@/lib/use-api";
-import { openWebsite } from "@/lib/website";
 import { colors, fonts, radius, space, type } from "@/theme";
 
 const NOTES_MAX = 500;
@@ -137,8 +136,8 @@ export default function CheckoutScreen() {
       {context.addresses.length === 0 ? (
         <StateView
           illustration={<BasketDrawing width={80} height={66} />}
-          description="Add a delivery address on the Samy's Bakery website, then come back and pull down to refresh."
-          action={<Button label="Add an address" variant="outline" onPress={() => openWebsite("addresses")} />}
+          description="Add a delivery address to continue."
+          action={<Button label="Add an address" variant="outline" onPress={() => router.push("/address/new")} />}
         />
       ) : (
         <View accessibilityRole="radiogroup" style={{ gap: space.sm }}>
@@ -151,6 +150,7 @@ export default function CheckoutScreen() {
               detail={`${address.recipientName} · ${[address.addressLine, address.city, address.state].join(", ")}`}
             />
           ))}
+          <Button label="Add another address" variant="link" onPress={() => router.push("/address/new")} />
         </View>
       )}
 
