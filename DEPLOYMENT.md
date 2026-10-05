@@ -64,6 +64,15 @@ configured will usually never get one.
   is verified: host `smtp.resend.com`, port `465`, user `resend`, password = a Resend API key,
   sender = an address on the verified domain.
 
+- **Authentication → Emails → Templates** (needed for the mobile app's 6-digit codes; the
+  website keeps working with the links either way):
+  - **Confirm signup** — subject `Confirm your Samy's Bakery account`; body: paste the whole of
+    `supabase/templates/confirmation.html`.
+  - **Reset password** — subject `Reset your Samy's Bakery password`; body: paste the whole of
+    `supabase/templates/recovery.html`.
+  - Keep **Email OTP length** at 6. If the dashboard says templates need custom SMTP, do this
+    right after the Resend SMTP step above.
+
 ## 4. Google sign-in
 
 The Google Cloud OAuth client's **Authorized redirect URI** stays the Supabase callback

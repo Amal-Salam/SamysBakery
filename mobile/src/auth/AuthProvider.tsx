@@ -10,7 +10,8 @@ type AuthState = {
   status: "loading" | "signedOut" | "signedIn";
   session: Session | null;
   me: Me | null;
-  signIn: (email: string, password: string) => Promise<string | null>;
+  /** null on success; otherwise a friendly message, and whether the email still needs its code. */
+  signIn: (email: string, password: string) => Promise<{ message: string; unverified: boolean } | null>;
   signOut: () => Promise<void>;
   /** Replace the cached profile after the customer edits it. */
   updateMe: (me: Me) => void;
@@ -24,7 +25,7 @@ function signInMessage(code: string | undefined): string {
     case "invalid_credentials":
       return "Incorrect email or password.";
     case "email_not_confirmed":
-      return "Please verify your email address first, using the link we sent you.";
+      return "Please verify your email address first, using the code or link we sent you.";
     case "over_request_rate_limit":
     case "over_email_send_rate_limit":
       return "Too many attempts. Please wait a few minutes and try again.";
@@ -66,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    return error ? signInMessage(error.code) : null;
+    return error ? { message: signInMessage(error.code), unverified: error.code === "email_not_confirmed" } : null;
   }, []);
 
   const signOut = useCallback(async () => {

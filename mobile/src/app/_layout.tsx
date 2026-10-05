@@ -48,6 +48,9 @@ export default function RootLayout() {
           <Stack.Screen name="checkout" options={{ title: "Checkout" }} />
           <Stack.Screen name="payment/[reference]" options={{ title: "Payment", headerBackVisible: false, gestureEnabled: false }} />
           <Stack.Screen name="sign-in" options={{ title: "", presentation: "modal" }} />
+          <Stack.Screen name="register" options={{ title: "", presentation: "modal" }} />
+          <Stack.Screen name="verify-email" options={{ title: "", presentation: "modal" }} />
+          <Stack.Screen name="forgot-password" options={{ title: "", presentation: "modal" }} />
           <Stack.Screen name="address/new" options={{ title: "Add an address", presentation: "modal" }} />
           <Stack.Screen name="address/[id]" options={{ title: "Edit address", presentation: "modal" }} />
         </Stack>

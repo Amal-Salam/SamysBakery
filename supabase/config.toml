@@ -234,6 +234,16 @@ otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).
 otp_expiry = 3600
 
+# Branded templates (Samy's Bakery): each keeps the link (website) and adds the
+# 6-digit code (mobile app). Paste the same HTML into the hosted dashboard.
+[auth.email.template.confirmation]
+subject = "Confirm your Samy's Bakery account"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Reset your Samy's Bakery password"
+content_path = "./supabase/templates/recovery.html"
+
 # Use a production-ready SMTP server
 # [auth.email.smtp]
 # enabled = true

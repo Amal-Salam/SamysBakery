@@ -1,0 +1,13 @@
+<!-- Samy's Bakery — password reset. The link is used by the website; the
+     6-digit code is used by the mobile app. Keep both. -->
+<div style="background:#F8F3EA;padding:32px 16px;font-family:Arial,Helvetica,sans-serif;color:#2C211C;">
+  <div style="max-width:480px;margin:0 auto;background:#FFFDF9;border-radius:12px;padding:32px 28px;">
+    <p style="margin:0 0 4px;font-family:Georgia,'Times New Roman',serif;font-size:24px;color:#4A2F27;">Samy's Bakery</p>
+    <h1 style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:normal;color:#4A2F27;">Reset your password</h1>
+    <p style="margin:0 0 20px;font-size:15px;line-height:1.6;">We received a request to reset the password for your Samy's Bakery account.</p>
+    <p style="margin:0 0 24px;"><a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#4A2F27;color:#FFFDF9;text-decoration:none;font-size:15px;padding:12px 22px;border-radius:999px;">Choose a new password</a></p>
+    <p style="margin:0 0 8px;font-size:14px;color:#756860;">Using the Samy's Bakery app? Enter this code instead:</p>
+    <p style="margin:0 0 24px;font-family:'Courier New',monospace;font-size:30px;letter-spacing:6px;color:#4A2F27;font-weight:bold;">{{ .Token }}</p>
+    <p style="margin:0;font-size:13px;color:#756860;line-height:1.5;">The link and code expire in 1 hour. If you didn't ask to reset your password, you can ignore this email; your password won't change.</p>
+  </div>
+</div>

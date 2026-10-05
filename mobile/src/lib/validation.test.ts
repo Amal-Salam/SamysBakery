@@ -35,3 +35,31 @@ describe("validateAddress (mirrors the website)", () => {
     expect(validateAddress({ ...good, additionalInfo: "x".repeat(501) }).additionalInfo).toBe("Additional details are too long.");
   });
 });
+
+describe("sign-up and reset checks (mirror the website)", () => {
+  it("validates registration fields", async () => {
+    const { validateRegistration } = await import("./validation");
+    expect(validateRegistration({ fullName: "Ada", email: "ada@example.com", password: "long-enough" })).toEqual({});
+    expect(validateRegistration({ fullName: " ", email: "nope", password: "short" })).toEqual({
+      fullName: "Enter your name.",
+      email: "Enter a valid email address.",
+      password: "Use at least 8 characters.",
+    });
+    expect(validateRegistration({ fullName: "Ada", email: "", password: "x".repeat(73) })).toEqual({
+      email: "Enter your email address.",
+      password: "Use at most 72 characters.",
+    });
+  });
+
+  it("validates codes and new passwords", async () => {
+    const { validateCode, validateResetPassword } = await import("./validation");
+    expect(validateCode("123456")).toBeUndefined();
+    expect(validateCode(" 123456 ")).toBeUndefined();
+    for (const bad of ["12345", "1234567", "abcdef", ""]) expect(validateCode(bad)).toBe("Enter the 6-digit code from the email.");
+    expect(validateResetPassword({ code: "123456", password: "new-password", confirmPassword: "new-password" })).toEqual({});
+    expect(validateResetPassword({ code: "1", password: "new-password", confirmPassword: "different" })).toEqual({
+      code: "Enter the 6-digit code from the email.",
+      confirmPassword: "Passwords do not match.",
+    });
+  });
+});

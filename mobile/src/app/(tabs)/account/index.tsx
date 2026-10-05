@@ -8,7 +8,6 @@ import { PressableScale } from "@/components/motion";
 import { WheatDrawing, WhiskDrawing } from "@/components/ornaments";
 import { SignInPrompt } from "@/components/SignInPrompt";
 import { Button, Card, Screen } from "@/components/ui";
-import { openWebsite } from "@/lib/website";
 import { colors, fonts, space, type } from "@/theme";
 
 function Row({ title, detail, onPress }: { title: string; detail: string; onPress: () => void }) {
@@ -37,7 +36,7 @@ export default function AccountScreen() {
     return (
       <Screen>
         <SignInPrompt illustration={<WhiskDrawing size={64} />} title="Sign in to your account." />
-        <Button label="New to Samy's Bakery? Create an account" variant="link" onPress={() => openWebsite("register")} />
+        <Button label="New to Samy's Bakery? Create an account" variant="link" onPress={() => router.push("/register")} />
       </Screen>
     );
   }

@@ -4,14 +4,13 @@ import { Text, View } from "react-native";
 
 import { useAuth } from "@/auth/AuthProvider";
 import { Button, Field, Notice, Screen } from "@/components/ui";
-import { openWebsite } from "@/lib/website";
 import { space, type } from "@/theme";
 
 export default function SignInScreen() {
   const { status, signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState<{ email?: string; password?: string; form?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; form?: string; unverified?: boolean }>({});
   const [busy, setBusy] = useState(false);
 
   // Once signed in, go back to where the customer came from.
@@ -29,9 +28,9 @@ export default function SignInScreen() {
     setErrors(next);
     if (next.email || next.password) return;
     setBusy(true);
-    const message = await signIn(email, password);
+    const failure = await signIn(email, password);
     setBusy(false);
-    if (message) setErrors({ form: message });
+    if (failure) setErrors({ form: failure.message, unverified: failure.unverified });
   }
 
   return (
@@ -43,6 +42,13 @@ export default function SignInScreen() {
         </Text>
       </View>
       {errors.form ? <Notice tone="error">{errors.form}</Notice> : null}
+      {errors.unverified ? (
+        <Button
+          label="Enter my verification code"
+          variant="outline"
+          onPress={() => router.push({ pathname: "/verify-email", params: { email: email.trim().toLowerCase() } })}
+        />
+      ) : null}
       <Field
         label="Email"
         value={email}
@@ -65,8 +71,8 @@ export default function SignInScreen() {
       />
       <Button label="Sign in" onPress={submit} loading={busy} />
       <View style={{ gap: space.xs }}>
-        <Button label="New to Samy's Bakery? Create an account" variant="link" onPress={() => openWebsite("register")} />
-        <Button label="Forgot your password?" variant="link" onPress={() => openWebsite("resetPassword")} />
+        <Button label="New to Samy's Bakery? Create an account" variant="link" onPress={() => router.push("/register")} />
+        <Button label="Forgot your password?" variant="link" onPress={() => router.push("/forgot-password")} />
         <Text style={type.small}>Signed up with Google? Set a password with &quot;Forgot your password?&quot; to sign in here.</Text>
       </View>
     </Screen>
