@@ -81,17 +81,4 @@ test.describe("login page", () => {
   });
 });
 
-test.describe("Google OAuth", () => {
-  test("Continue with Google hands off to Google's sign-in page", async ({ page }) => {
-    // The local Supabase stack has no Google provider configured; this check runs
-    // only when E2E targets a hosted project.
-    test.skip(
-      /127\.0\.0\.1|localhost/.test(process.env.NEXT_PUBLIC_SUPABASE_URL ?? ""),
-      "Google provider is only configured on the hosted project"
-    );
-    await page.goto("/login?next=%2Fcheckout");
-    await page.getByRole("button", { name: "Continue with Google" }).click();
-    await page.waitForURL(/accounts\.google\.com/, { timeout: 20_000 });
-    expect(new URL(page.url()).hostname).toBe("accounts.google.com");
-  });
-});
+// Google sign-in is covered by auth-google.spec.ts (on our own domain, against a mock Google).

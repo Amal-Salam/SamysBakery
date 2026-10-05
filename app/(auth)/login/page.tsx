@@ -14,6 +14,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   callback:
     "We couldn't complete sign-in. The link may have expired or been opened in a different browser. If you just verified your email, please sign in.",
   oauth: "Google sign-in is unavailable right now. Please try again.",
+  oauth_cancelled: "Google sign-in was cancelled.",
 };
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {

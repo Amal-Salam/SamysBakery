@@ -97,19 +97,10 @@ export async function signUp(
   return ok({ email: parsed.data.email });
 }
 
+/** "Continue with Google": handled on our own domain (see app/(auth)/auth/google). */
 export async function signInWithGoogle(formData: FormData): Promise<void> {
   const next = safeRedirectPath(formData.get("next"), "/");
-
-  const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: { redirectTo: callbackUrl(next) },
-  });
-  if (error || !data.url) {
-    redirect(`/login?error=oauth&next=${encodeURIComponent(next)}`);
-  }
-
-  redirect(data.url);
+  redirect(`/auth/google?next=${encodeURIComponent(next)}`);
 }
 
 export async function requestPasswordReset(

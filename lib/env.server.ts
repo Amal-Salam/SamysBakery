@@ -82,3 +82,32 @@ export function getResendEnv() {
 export function getRateLimitHashKey(): string {
   return createHash("sha256").update(`samys-rate-limit:${getServerEnv().SUPABASE_SERVICE_ROLE_KEY}`).digest("hex");
 }
+
+// Google sign-in on our own domain (owner decision, G1). The client secret is
+// server-only. GOOGLE_OAUTH_BASE exists only for automated tests (a localhost
+// mock); production always uses Google's real endpoints.
+const googleEnvSchema = z.object({
+  GOOGLE_OAUTH_CLIENT_ID: z.string().min(1),
+  GOOGLE_OAUTH_CLIENT_SECRET: z.string().min(1),
+  GOOGLE_OAUTH_BASE: z
+    .string()
+    .regex(/^http:\/\/(127\.0\.0\.1|localhost):\d+$/, "must be a localhost mock (tests only)")
+    .optional(),
+});
+
+/** Google sign-in settings, or null when not configured (sign-in then reports unavailable). */
+export function getGoogleEnv() {
+  const parsed = googleEnvSchema.safeParse({
+    GOOGLE_OAUTH_CLIENT_ID: process.env.GOOGLE_OAUTH_CLIENT_ID,
+    GOOGLE_OAUTH_CLIENT_SECRET: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
+    GOOGLE_OAUTH_BASE: process.env.GOOGLE_OAUTH_BASE || undefined,
+  });
+  if (!parsed.success) return null;
+  const base = parsed.data.GOOGLE_OAUTH_BASE;
+  return {
+    clientId: parsed.data.GOOGLE_OAUTH_CLIENT_ID,
+    clientSecret: parsed.data.GOOGLE_OAUTH_CLIENT_SECRET,
+    authorizeUrl: base ? `${base}/o/oauth2/v2/auth` : "https://accounts.google.com/o/oauth2/v2/auth",
+    tokenUrl: base ? `${base}/token` : "https://oauth2.googleapis.com/token",
+  };
+}

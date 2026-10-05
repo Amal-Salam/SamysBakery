@@ -67,13 +67,20 @@ export async function clearActiveMenus() {
     .from("weekly_menus")
     .select("id")
     .in("status", ["DRAFT", "PUBLISHED"]);
+  // Park each one on an unused Tuesday in the 1990s (week_start is unique).
+  const { data: parked } = await service.from("weekly_menus").select("week_start").lt("week_start", "2000-01-01");
+  const used = new Set((parked ?? []).map((row) => row.week_start));
   for (const menu of active ?? []) {
-    // A random Tuesday in the 1990s keeps week_start unique.
-    const weeks = Math.floor(Math.random() * 500);
-    const start = new Date(Date.UTC(1990, 0, 2 + weeks * 7));
+    let weeks = Math.floor(Math.random() * 500);
+    let start = new Date(Date.UTC(1990, 0, 2 + weeks * 7));
+    while (used.has(start.toISOString().slice(0, 10))) {
+      weeks = (weeks + 1) % 500;
+      start = new Date(Date.UTC(1990, 0, 2 + weeks * 7));
+    }
+    used.add(start.toISOString().slice(0, 10));
     const end = new Date(start);
     end.setUTCDate(start.getUTCDate() + 4);
-    await service
+    const { error } = await service
       .from("weekly_menus")
       .update({
         status: "EXPIRED",
@@ -83,6 +90,7 @@ export async function clearActiveMenus() {
         week_end: end.toISOString().slice(0, 10),
       })
       .eq("id", menu.id);
+    if (error) throw new Error(`Could not clear menu ${menu.id}: ${error.message}`);
   }
 }
 

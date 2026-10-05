@@ -15,6 +15,13 @@ const mockPaystack = {
   PAYSTACK_SECRET_KEY: "sk_test_mock_e2e",
   PAYSTACK_API_BASE: `http://127.0.0.1:${MOCK_PAYSTACK_PORT}`,
 };
+// …a local mock of Google's OAuth endpoints (Google sign-in on our domain)…
+const MOCK_GOOGLE_PORT = 3997;
+const mockGoogle = {
+  GOOGLE_OAUTH_CLIENT_ID: "mock-client.apps.googleusercontent.com",
+  GOOGLE_OAUTH_CLIENT_SECRET: "mock-google-secret",
+  GOOGLE_OAUTH_BASE: `http://127.0.0.1:${MOCK_GOOGLE_PORT}`,
+};
 // …and a local mock of the Resend API.
 const MOCK_RESEND_PORT = 3998;
 const mockResend = {
@@ -26,6 +33,7 @@ Object.assign(process.env, localSupabase, mockPaystack, mockResend);
 
 export default defineConfig({
   testDir: "./tests/e2e",
+  globalSetup: "./tests/e2e/global-setup.ts",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -76,6 +84,12 @@ export default defineConfig({
   // Runs against a production build so E2E reflects deployed behaviour.
   webServer: [
     {
+      command: "node tests/e2e/mock-google.mjs",
+      url: `http://127.0.0.1:${MOCK_GOOGLE_PORT}/health`,
+      reuseExistingServer: false,
+      env: { MOCK_GOOGLE_PORT: String(MOCK_GOOGLE_PORT), ...mockGoogle },
+    },
+    {
       command: "node tests/e2e/mock-paystack.mjs",
       url: `http://127.0.0.1:${MOCK_PAYSTACK_PORT}/health`,
       reuseExistingServer: false,
@@ -100,6 +114,7 @@ export default defineConfig({
         ...localSupabase,
         ...mockPaystack,
         ...mockResend,
+        ...mockGoogle,
         NEXT_PUBLIC_APP_URL: baseURL,
         NEXT_DIST_DIR: ".next-e2e",
         // The suite signs in hundreds of times from one IP. Honoured only against

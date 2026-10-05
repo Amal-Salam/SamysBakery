@@ -36,6 +36,8 @@ export const RATE_LIMITS = {
   signUpPerIp: { max: 5, windowSeconds: HOUR },
   passwordResetPerEmail: { max: 3, windowSeconds: HOUR },
   webhookPerIp: { max: 300, windowSeconds: MINUTE },
+  /** Google sign-in start + callback, per IP. */
+  googleSignInPerIp: { max: 30, windowSeconds: 15 * MINUTE },
   /** Mobile API (/api/v1), all endpoints together. */
   apiPerIp: { max: 120, windowSeconds: MINUTE },
 } as const;

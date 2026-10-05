@@ -110,4 +110,11 @@ describe("service-role isolation", () => {
     );
     expect(suspicious).toEqual([]);
   });
+
+  it("the Google client secret is read only in lib/env.server.ts", () => {
+    const readers = files
+      .filter((file) => file.text.includes("process.env.GOOGLE_OAUTH_CLIENT_SECRET"))
+      .map((file) => file.rel);
+    expect(readers).toEqual(["lib/env.server.ts"]);
+  });
 });
