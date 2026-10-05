@@ -38,8 +38,10 @@ Scheduled jobs (`pg_cron`) expire ended menus hourly and expired payment holds e
    | `PAYSTACK_SECRET_KEY` | Paystack → Settings → API Keys → **Test** secret key (`sk_test_…`) |
    | `RESEND_API_KEY` | Resend API key (`re_…`) — once the sending domain is verified |
    | `RESEND_FROM_EMAIL` | e.g. `Samy's Bakery <orders@mail.your-domain.shop>` |
+   | `GOOGLE_OAUTH_CLIENT_ID` | Google Cloud → Credentials → OAuth client → Client ID |
+   | `GOOGLE_OAUTH_CLIENT_SECRET` | the same OAuth client → Client secret (mark **Sensitive**) |
 
-   Do **not** set `PAYSTACK_API_BASE`, `RESEND_API_BASE` or `E2E_DISABLE_RATE_LIMITS` —
+   Do **not** set `PAYSTACK_API_BASE`, `RESEND_API_BASE`, `GOOGLE_OAUTH_BASE` or `E2E_DISABLE_RATE_LIMITS` —
    they exist only for automated tests.
 3. Deploy. If the final address differs from what you set in `NEXT_PUBLIC_APP_URL`, fix the
    variable and **Redeploy**.
@@ -75,10 +77,22 @@ configured will usually never get one.
 
 ## 4. Google sign-in
 
-The Google Cloud OAuth client's **Authorized redirect URI** stays the Supabase callback
-(`https://<project-ref>.supabase.co/auth/v1/callback`) — unchanged by deployment. Optionally
-add `APP_URL` under Authorized JavaScript origins. Before opening to the public, set the OAuth
-consent screen's publishing status to **In production** so any Google account can sign in.
+Google sign-in runs on our own domain (`/auth/google`), so Google's screen shows `APP_URL`'s
+host, not `<project-ref>.supabase.co`. Our server exchanges the code with Google and then
+signs the user in to Supabase with the Google ID token.
+
+1. **Google Cloud → APIs & Services → Credentials → your OAuth client (Web application)**
+   - Authorized redirect URIs: add `APP_URL/auth/google/callback` (exact, no trailing slash).
+     For local development also add `http://localhost:3000/auth/google/callback`.
+   - The old Supabase callback (`https://<project-ref>.supabase.co/auth/v1/callback`) is no
+     longer used; remove it once live Google sign-in works.
+2. **Supabase → Authentication → Sign In / Providers → Google**: keep it **enabled**, its
+   Client ID must be the same OAuth client ID, and leave **Skip nonce checks** off.
+3. **Vercel**: set `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` (section 2), then
+   **Redeploy**. Without them the Google button returns to sign-in with an error.
+4. **Google Auth Platform → Branding**: app name, support email, and `APP_URL`'s host under
+   Authorized domains. Before opening to the public, set the publishing status to
+   **In production** so any Google account can sign in.
 
 ## 5. Paystack (test mode)
 
