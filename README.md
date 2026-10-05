@@ -1,61 +1,40 @@
-# Samy's Bakery v2
+# Samy's Bakery
 
-Online storefront and admin system for Samy's Bakery, an artisanal micro-bakery
+Online storefront and admin for Samy's Bakery, an artisanal micro-bakery.
+Customers order from a weekly menu and pay with Paystack; delivery is arranged separately.
 
-Read [AGENTS.md](AGENTS.md) and the specifications in [docs/](docs/) before contributing.
+**Stack:** Next.js · TypeScript · Tailwind · Supabase (database, auth, storage) · Paystack · Resend.
+The Android app lives in [mobile/](mobile/README.md). Project rules: [AGENTS.md](AGENTS.md).
 
-## Stack
+## Run locally
 
-Next.js (App Router) · TypeScript · Tailwind CSS · shadcn/ui (Radix) · Supabase · Paystack · Resend · Zod · Vitest · Playwright
-
-## Getting started
-
-Requires Node.js 24+.
+Needs Node.js 24+ and Docker.
 
 ```bash
 npm install
-cp .env.example .env.local   # fill in values; never commit .env.local
-npm run dev
+cp .env.example .env.local   # fill in values; never commit it
+npx supabase start           # local database, auth and mail catcher (http://127.0.0.1:54324)
+npm run dev                  # http://localhost:3000
 ```
 
-Open http://localhost:3000.
+## Commands
 
-## Scripts
+| Command | What it does |
+| --- | --- |
+| `npm run lint` · `npm run typecheck` | Code checks |
+| `npm test` | Unit tests (offline) |
+| `npm run test:db` | Integration and security tests (local database) |
+| `npm run test:schema` | Database tests (local database) |
+| `npm run test:e2e` | Browser tests (local database; first run `npx playwright install chromium`) |
+| `npm run build` | Production build |
+| `npm run db:push` | Apply migrations to the linked Supabase project |
+| `npm run admin:promote -- you@example.com` | Make an existing account an admin |
 
-| Command             | Purpose                                   |
-| ------------------- | ----------------------------------------- |
-| `npm run dev`       | Start the development server              |
-| `npm run build`     | Production build                          |
-| `npm run start`     | Serve the production build                |
-| `npm run lint`      | ESLint                                    |
-| `npm run typecheck` | TypeScript type check                     |
-| `npm test`          | Unit tests (Vitest, offline)              |
-| `npm run test:db`   | Integration + security tests (linked Supabase; creates and removes throwaway users) |
-| `npm run test:e2e`  | End-to-end tests (Playwright)             |
-| `npm run db:push`   | Apply migrations to the linked Supabase project |
-| `npm run db:types`  | Regenerate `types/database.ts` from the linked project |
-| `npm run admin:promote` | Promote `ADMIN_BOOTSTRAP_EMAIL` (or an email argument) to ADMIN |
+What each test covers: [tests/README.md](tests/README.md).
 
-First-time E2E setup: `npx playwright install chromium`.
+## Good to know
 
-## Supabase
-
-Link the CLI once, in your own terminal (credentials stay in your keychain):
-
-```bash
-npx supabase login
-npx supabase link --project-ref <your-project-ref>
-npm run db:push
-```
-
-In the Supabase dashboard → Authentication → URL Configuration, add
-`<NEXT_PUBLIC_APP_URL>/auth/callback` to the redirect allow-list.
-
-## Admin accounts
-
-There is one admin role. To create an admin: sign up normally, verify the email, then run
-`npm run admin:promote` (uses `ADMIN_BOOTSTRAP_EMAIL`) or `npm run admin:promote -- someone@example.com`.
-
-## Design tokens
-
-All colours, fonts, type scale and radii are defined once in [app/globals.css](app/globals.css) (`@theme`). Tailwind's default palette is disabled, so only approved tokens are available. Change tokens there, never in components.
+- **Mobile API:** `/api/v1` serves the mobile app (bearer-token sign-in, same rules as the website).
+- **Emails:** sign-up and password-reset templates are in `supabase/templates/` (link for the website, 6-digit code for the app).
+- **Design tokens:** colours and fonts live only in `app/globals.css`.
+- **Deploying:** see [DEPLOYMENT.md](DEPLOYMENT.md).
